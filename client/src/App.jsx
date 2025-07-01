@@ -24,6 +24,10 @@ import {
 import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 
+import AdminRoutes from "./real_admin/adminRoutes";
+import { Users} from "./real_admin/Users"
+
+
 const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -83,11 +87,19 @@ const appRouter = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <PurchaseCourseProtectedRoute>
-            <CourseProgress />
+              <CourseProgress />
             </PurchaseCourseProtectedRoute>
           </ProtectedRoute>
         ),
       },
+
+      //real Admin
+
+      {
+        path: "/real_admin/*",
+        element: <AdminRoutes user={Users} />,  // pass user from auth context or state
+      },
+
 
       // admin routes start from here
       {
