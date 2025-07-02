@@ -25,126 +25,130 @@ import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRo
 import { ThemeProvider } from "./components/ThemeProvider";
 
 import AdminRoutes from "./real_admin/adminRoutes";
-import { Users} from "./real_admin/Users"
+import Users from "./real_admin/Users";
 
-
-const appRouter = createBrowserRouter([
-  {
-    path: "/",
-    element: <MainLayout />,
-    children: [
-      {
-        path: "/",
-        element: (
-          <>
-            <HeroSection />
-            <Courses />
-          </>
-        ),
-      },
-      {
-        path: "login",
-        element: (
-          <AuthenticatedUser>
-            <Login />
-          </AuthenticatedUser>
-        ),
-      },
-      {
-        path: "my-learning",
-        element: (
-          <ProtectedRoute>
-            <MyLearning />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "profile",
-        element: (
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "course/search",
-        element: (
-          <ProtectedRoute>
-            <SearchPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "course-detail/:courseId",
-        element: (
-          <ProtectedRoute>
-            <CourseDetail />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "course-progress/:courseId",
-        element: (
-          <ProtectedRoute>
-            <PurchaseCourseProtectedRoute>
-              <CourseProgress />
-            </PurchaseCourseProtectedRoute>
-          </ProtectedRoute>
-        ),
-      },
-
-      //real Admin
-
-      {
-        path: "/real_admin/*",
-        element: <AdminRoutes user={Users} />,  // pass user from auth context or state
-      },
-
-
-      // admin routes start from here
-      {
-        path: "admin",
-        element: (
-          <AdminRoute>
-            <Sidebar />
-          </AdminRoute>
-        ),
-        children: [
-          {
-            path: "dashboard",
-            element: <Dashboard />,
-          },
-          {
-            path: "course",
-            element: <CourseTable />,
-          },
-          {
-            path: "course/create",
-            element: <AddCourse />,
-          },
-          {
-            path: "course/:courseId",
-            element: <EditCourse />,
-          },
-          {
-            path: "course/:courseId/lecture",
-            element: <CreateLecture />,
-          },
-          {
-            path: "course/:courseId/lecture/:lectureId",
-            element: <EditLecture />,
-          },
-        ],
-      },
-    ],
-  },
-]);
+import { useLoadUserQuery } from "@/features/api/authApi";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 function App() {
+  const { data, isLoading } = useLoadUserQuery();
+
+  if (isLoading) return <LoadingSpinner />;
+
+  const appRouter = createBrowserRouter([
+    {
+      path: "/",
+      element: <MainLayout />,
+      children: [
+        {
+          path: "/",
+          element: (
+            <>
+              <HeroSection />
+              <Courses />
+            </>
+          ),
+        },
+        {
+          path: "login",
+          element: (
+            <AuthenticatedUser>
+              <Login />
+            </AuthenticatedUser>
+          ),
+        },
+        {
+          path: "my-learning",
+          element: (
+            <ProtectedRoute>
+              <MyLearning />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "profile",
+          element: (
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "course/search",
+          element: (
+            <ProtectedRoute>
+              <SearchPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "course-detail/:courseId",
+          element: (
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "course-progress/:courseId",
+          element: (
+            <ProtectedRoute>
+              <PurchaseCourseProtectedRoute>
+                <CourseProgress />
+              </PurchaseCourseProtectedRoute>
+            </ProtectedRoute>
+          ),
+        },
+
+        // ✅ Real Admin
+        {
+          path: "/real_admin/*",
+          element: <AdminRoutes user={data?.user} />,
+        },
+
+        // ✅ Admin Sidebar Routes
+        {
+          path: "admin",
+          element: (
+            <AdminRoute>
+              <Sidebar />
+            </AdminRoute>
+          ),
+          children: [
+            {
+              path: "dashboard",
+              element: <Dashboard />,
+            },
+            {
+              path: "course",
+              element: <CourseTable />,
+            },
+            {
+              path: "course/create",
+              element: <AddCourse />,
+            },
+            {
+              path: "course/:courseId",
+              element: <EditCourse />,
+            },
+            {
+              path: "course/:courseId/lecture",
+              element: <CreateLecture />,
+            },
+            {
+              path: "course/:courseId/lecture/:lectureId",
+              element: <EditLecture />,
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
   return (
     <main>
       <ThemeProvider>
-      <RouterProvider router={appRouter} />
+        <RouterProvider router={appRouter} />
       </ThemeProvider>
     </main>
   );

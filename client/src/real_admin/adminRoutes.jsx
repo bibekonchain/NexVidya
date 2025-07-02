@@ -11,9 +11,10 @@ export default function AdminRoutes({ user }) {
   return (
     <AdminLayout>
       <Routes>
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<Users />} />
-        <Route path="/admin/users/:id" element={<UserDetails />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="real_admin/*" element={<AdminRoutes user={user} />} />
+
+        <Route path="users/:id" element={<UserDetails />} />
       </Routes>
     </AdminLayout>
   );

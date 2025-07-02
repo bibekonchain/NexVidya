@@ -7,10 +7,10 @@ export default function AdminLayout({ children }) {
       <aside className="w-64 h-screen bg-gray-900 text-white p-4">
         <h2 className="text-xl font-bold mb-6">Admin Panel</h2>
         <nav className="space-y-2">
-          <Link to="/admin/dashboard" className="block hover:underline">
+          <Link to="/real_admin/dashboard" className="block hover:underline">
             Dashboard
           </Link>
-          <Link to="/admin/users" className="block hover:underline">
+          <Link to="/real_admin/users" className="block hover:underline">
             Users
           </Link>
         </nav>
