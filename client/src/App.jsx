@@ -27,11 +27,14 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import AdminRoutes from "./real_admin/adminRoutes";
 import Users from "./real_admin/Users";
 
+
 import { useLoadUserQuery } from "@/features/api/authApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useSelector } from "react-redux";
 
 function App() {
   const { data, isLoading } = useLoadUserQuery();
+  const { user } = useSelector((state) => state.auth);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -103,7 +106,7 @@ function App() {
         // ✅ Real Admin
         {
           path: "/real_admin/*",
-          element: <AdminRoutes user={data?.user} />,
+          element: <AdminRoutes user={user} />,
         },
 
         // ✅ Admin Sidebar Routes

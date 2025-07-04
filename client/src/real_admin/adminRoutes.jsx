@@ -4,17 +4,19 @@ import AdminDashboard from "./AdminDashboard";
 import Users from "./Users";
 import UserDetails from "./UserDetails";
 import AdminLayout from "./AdminLayout";
+import { useSelector } from "react-redux";
 
-export default function AdminRoutes({ user }) {
+export default function AdminRoutes() {
+  const { user } = useSelector((store) => store.auth);
+
   if (!user || user.role !== "admin") return <Navigate to="/" replace />;
 
   return (
     <AdminLayout>
       <Routes>
         <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="real_admin/*" element={<AdminRoutes user={user} />} />
-
         <Route path="users/:id" element={<UserDetails />} />
+        <Route path="users" element={<Users />} />
       </Routes>
     </AdminLayout>
   );

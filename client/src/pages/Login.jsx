@@ -1,4 +1,3 @@
-// McgPr7oX7v1mMcbN
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +18,8 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { userLoggedIn } from "../features/authSlice"
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({
@@ -27,6 +28,9 @@ const Login = () => {
     password: "",
   });
   const [loginInput, setLoginInput] = useState({ email: "", password: "" });
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [
     registerUser,
@@ -37,6 +41,7 @@ const Login = () => {
       isSuccess: registerIsSuccess,
     },
   ] = useRegisterUserMutation();
+
   const [
     loginUser,
     {
@@ -46,7 +51,6 @@ const Login = () => {
       isSuccess: loginIsSuccess,
     },
   ] = useLoginUserMutation();
-  const navigate = useNavigate();
 
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
@@ -64,26 +68,45 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if(registerIsSuccess && registerData){
-      toast.success(registerData.message || "Signup successful.")
+    // Signup success
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup successful.");
     }
-    if(registerError){
-      toast.error(registerError.data.message || "Signup Failed");
+
+    // Signup error
+    if (registerError) {
+      toast.error(registerError.data?.message || "Signup Failed");
     }
-    if(loginIsSuccess && loginData){
+
+    // Login success
+    if (loginIsSuccess && loginData) {
+      dispatch(userLoggedIn({ user: loginData.user }));
       toast.success(loginData.message || "Login successful.");
-      navigate("/");
+
+      const { role } = loginData.user || {};
+
+      if (role === "real_admin") {
+        navigate("/real_admin/dashboard");
+      } else if (role === "admin" || role === "instructor") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     }
-    if(loginError){ 
-      toast.error(loginError.data.message || "login Failed");
+
+    // Login error
+    if (loginError) {
+      toast.error(loginError.data?.message || "Login Failed");
     }
   }, [
-    loginIsLoading,
-    registerIsLoading,
+    loginIsSuccess,
     loginData,
-    registerData,
     loginError,
+    registerIsSuccess,
+    registerData,
     registerError,
+    dispatch,
+    navigate,
   ]);
 
   return (
@@ -93,6 +116,8 @@ const Login = () => {
           <TabsTrigger value="signup">Signup</TabsTrigger>
           <TabsTrigger value="login">Login</TabsTrigger>
         </TabsList>
+
+        {/* Signup Tab */}
         <TabsContent value="signup">
           <Card>
             <CardHeader>
@@ -110,29 +135,29 @@ const Login = () => {
                   value={signupInput.name}
                   onChange={(e) => changeInputHandler(e, "signup")}
                   placeholder="Eg. patel"
-                  required="true"
+                  required
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="username">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
                   name="email"
                   value={signupInput.email}
                   onChange={(e) => changeInputHandler(e, "signup")}
                   placeholder="Eg. patel@gmail.com"
-                  required="true"
+                  required
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="username">Password</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   type="password"
                   name="password"
                   value={signupInput.password}
                   onChange={(e) => changeInputHandler(e, "signup")}
                   placeholder="Eg. xyz"
-                  required="true"
+                  required
                 />
               </div>
             </CardContent>
@@ -143,8 +168,8 @@ const Login = () => {
               >
                 {registerIsLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                    wait
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
                   </>
                 ) : (
                   "Signup"
@@ -153,35 +178,37 @@ const Login = () => {
             </CardFooter>
           </Card>
         </TabsContent>
+
+        {/* Login Tab */}
         <TabsContent value="login">
           <Card>
             <CardHeader>
               <CardTitle>Login</CardTitle>
               <CardDescription>
-                Login your password here. After signup, you'll be logged in.
+                Login with your credentials to access your dashboard.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
-                <Label htmlFor="current">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
                   name="email"
                   value={loginInput.email}
                   onChange={(e) => changeInputHandler(e, "login")}
-                  placeholder="Eg. patel@gmail.com"
-                  required="true"
+                  placeholder="Eg. admin@nexvidya.com"
+                  required
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="new">Password</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   type="password"
                   name="password"
                   value={loginInput.password}
                   onChange={(e) => changeInputHandler(e, "login")}
-                  placeholder="Eg. xyz"
-                  required="true"
+                  placeholder="Eg. Admin@123"
+                  required
                 />
               </div>
             </CardContent>
@@ -192,8 +219,8 @@ const Login = () => {
               >
                 {loginIsLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                    wait
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
                   </>
                 ) : (
                   "Login"
@@ -206,4 +233,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;
