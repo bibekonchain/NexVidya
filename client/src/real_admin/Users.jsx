@@ -5,50 +5,58 @@ import axios from "axios";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
-  console.log("Current logged-in user:", users); // get from Redux
 
   useEffect(() => {
     axios
       .get("/api/v1/admin/users", { withCredentials: true })
-      .then((res) => {
-        console.log("Fetched user response:", res); // <-- log it!
-        setUsers(res.data.users || []);
-      })
+      .then((res) => setUsers(res.data.users || []))
       .catch((err) => console.error("Failed to fetch users:", err));
   }, []);
-  
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl text-gray-900 font-bold mb-4">All Users</h1>
-      <div className="overflow-auto">
-        <table className="min-w-full bg-white rounded shadow">
-          <thead>
-            <tr className="bg-gray-900 text-left">
-              <th className="py-2  px-4">Name</th>
-              <th className="py-2 px-4">Email</th>
-              <th className="py-2 px-4">Role</th>
-              <th className="py-2 px-4">Enrolled Courses</th>
-              <th className="py-2 px-4">Actions</th>
+    <div className="space-y-6 text-gray-900 dark:text-gray-100">
+      <h1 className="text-3xl font-bold">All Users</h1>
+      <div className="overflow-x-auto rounded shadow bg-white dark:bg-gray-800">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+          <thead className="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th className="px-6 py-3 text-left text-sm font-medium">Name</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">Email</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">Role</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">
+                Courses
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {users.map((user) => (
-              <tr key={user._id} className="border-t text-gray-900">
-                <td className="py-2 px-4">{user.name}</td>
-                <td className="py-2 px-4">{user.email}</td>
-                <td className="py-2 px-4 capitalize">{user.role}</td>
-                <td className="py-2 px-4">{user.enrolledCourses.length}</td>
-                <td className="py-2 px-4">
+              <tr key={user._id}>
+                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                <td className="px-6 py-4 capitalize">{user.role}</td>
+                <td className="px-6 py-4 text-center">
+                  {user.enrolledCourses.length}
+                </td>
+                <td className="px-6 py-4">
                   <Link
                     to={`/real_admin/users/${user._id}`}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     View Details
                   </Link>
                 </td>
               </tr>
             ))}
+            {!users.length && (
+              <tr>
+                <td colSpan="5" className="text-center p-4 text-gray-500">
+                  No users found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
