@@ -9,7 +9,9 @@ import { useSelector } from "react-redux";
 export default function AdminRoutes() {
   const { user } = useSelector((store) => store.auth);
 
-  if (!user || user.role !== "admin") return <Navigate to="/" replace />;
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <AdminLayout>

@@ -31,6 +31,7 @@ const Navbar = () => {
   const { user } = useSelector((store) => store.auth);
   const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
   const navigate = useNavigate();
+
   const logoutHandler = async () => {
     await logoutUser();
   };
@@ -41,6 +42,10 @@ const Navbar = () => {
       navigate("/login");
     }
   }, [isSuccess]);
+
+  const isAdmin = user?.role === "admin"; // real_admin
+  const isInstructor = user?.role === "instructor";
+  const isStudent = user?.role === "student";
 
   return (
     <div className="h-16 dark:bg-[#020817] bg-white border-b dark:border-b-gray-800 border-b-gray-200 fixed top-0 left-0 right-0 duration-300 z-10">
@@ -54,7 +59,7 @@ const Navbar = () => {
             </h1>
           </Link>
         </div>
-        {/* User icons and dark mode icon  */}
+
         <div className="flex items-center gap-8">
           {user ? (
             <DropdownMenu>
@@ -72,20 +77,37 @@ const Navbar = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
-                    <Link to="my-learning">My learning</Link>
+                    <Link to="/my-learning">My Learning</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    {" "}
-                    <Link to="profile">Edit Profile</Link>{" "}
+                    <Link to="/profile">Edit Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={logoutHandler}>
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                {user?.role === "instructor" && (
+
+                {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem><Link to="/admin/dashboard">Dashboard</Link></DropdownMenuItem>
+                    <DropdownMenuLabel>Admin Panel</DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem>
+                        <Link to="/real_admin/dashboard">Dashboard</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link to="/real_admin/users">Manage Users</Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </>
+                )}
+
+                {isInstructor && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Link to="/admin/dashboard">Instructor Dashboard</Link>
+                    </DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>
@@ -101,10 +123,11 @@ const Navbar = () => {
           <DarkMode />
         </div>
       </div>
-      {/* Mobile device  */}
+
+      {/* Mobile */}
       <div className="flex md:hidden items-center justify-between px-4 h-full">
         <h1 className="font-extrabold text-2xl">E-learning</h1>
-        <MobileNavbar user={user}/>
+        <MobileNavbar user={user} logoutHandler={logoutHandler} />
       </div>
     </div>
   );
@@ -112,9 +135,12 @@ const Navbar = () => {
 
 export default Navbar;
 
-const MobileNavbar = ({user}) => {
+const MobileNavbar = ({ user, logoutHandler }) => {
   const navigate = useNavigate();
-  
+
+  const isAdmin = user?.role === "admin";
+  const isInstructor = user?.role === "instructor";
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -128,19 +154,35 @@ const MobileNavbar = ({user}) => {
       </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader className="flex flex-row items-center justify-between mt-2">
-          <SheetTitle> <Link to="/">E-Learning</Link></SheetTitle>
+          <SheetTitle>
+            <Link to="/">E-Learning</Link>
+          </SheetTitle>
           <DarkMode />
         </SheetHeader>
         <Separator className="mr-2" />
-        <nav className="flex flex-col space-y-4">
+        <nav className="flex flex-col space-y-4 mt-4">
           <Link to="/my-learning">My Learning</Link>
           <Link to="/profile">Edit Profile</Link>
-          <p>Log out</p>
+          <button onClick={logoutHandler}>Log out</button>
         </nav>
-        {user?.role === "instructor" && (
-          <SheetFooter>
+
+        {isAdmin && (
+          <div className="flex flex-col space-y-2 mt-6">
+            <h3 className="font-semibold text-gray-700">Admin Panel</h3>
+            <Link to="/real_admin/dashboard">Dashboard</Link>
+            <Link to="/real_admin/users">Manage Users</Link>
+          </div>
+        )}
+
+        {isInstructor && (
+          <SheetFooter className="mt-4">
             <SheetClose asChild>
-              <Button type="submit" onClick={()=> navigate("/admin/dashboard")}>Dashboard</Button>
+              <Button
+                type="button"
+                onClick={() => navigate("/admin/dashboard")}
+              >
+                Instructor Dashboard
+              </Button>
             </SheetClose>
           </SheetFooter>
         )}

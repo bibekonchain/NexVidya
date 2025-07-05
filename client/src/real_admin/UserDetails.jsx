@@ -23,7 +23,7 @@ export default function UserDetails() {
   if (!user) return <p className="p-4">Loading user details...</p>;
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 text-gray-900 space-y-4">
       <h1 className="text-2xl font-bold">User: {user.name}</h1>
       <p>Email: {user.email}</p>
       <p>Role: {user.role}</p>
@@ -44,9 +44,9 @@ export default function UserDetails() {
       <section>
         <h2 className="text-xl font-semibold mt-6 mb-2">Purchase History:</h2>
         {purchases.length ? (
-          <table className="w-full bg-white rounded shadow">
+          <table className="w-full bg-gray-900 rounded shadow">
             <thead>
-              <tr className="bg-gray-200 text-left">
+              <tr className="bg-gray-900 text-left">
                 <th className="py-2 px-4">Course</th>
                 <th className="py-2 px-4">Amount</th>
                 <th className="py-2 px-4">Status</th>

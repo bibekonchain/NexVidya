@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   if (!stats) return <p className="p-4">Loading admin stats...</p>;
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 text-gray-900 space-y-4">
       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <StatCard title="Total Users" value={stats.totalUsers} />

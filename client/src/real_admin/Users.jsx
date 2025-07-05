@@ -5,22 +5,27 @@ import axios from "axios";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
+  console.log("Current logged-in user:", users); // get from Redux
 
   useEffect(() => {
     axios
       .get("/api/v1/admin/users", { withCredentials: true })
-      .then((res) => setUsers(res.data.users))
+      .then((res) => {
+        console.log("Fetched user response:", res); // <-- log it!
+        setUsers(res.data.users || []);
+      })
       .catch((err) => console.error("Failed to fetch users:", err));
   }, []);
+  
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">All Users</h1>
+      <h1 className="text-2xl text-gray-900 font-bold mb-4">All Users</h1>
       <div className="overflow-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
-            <tr className="bg-gray-200 text-left">
-              <th className="py-2 px-4">Name</th>
+            <tr className="bg-gray-900 text-left">
+              <th className="py-2  px-4">Name</th>
               <th className="py-2 px-4">Email</th>
               <th className="py-2 px-4">Role</th>
               <th className="py-2 px-4">Enrolled Courses</th>
@@ -29,14 +34,14 @@ export default function Users() {
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user._id} className="border-t">
+              <tr key={user._id} className="border-t text-gray-900">
                 <td className="py-2 px-4">{user.name}</td>
                 <td className="py-2 px-4">{user.email}</td>
                 <td className="py-2 px-4 capitalize">{user.role}</td>
                 <td className="py-2 px-4">{user.enrolledCourses.length}</td>
                 <td className="py-2 px-4">
                   <Link
-                    to={`/admin/users/${user._id}`}
+                    to={`/real_admin/users/${user._id}`}
                     className="text-blue-600 hover:underline"
                   >
                     View Details
