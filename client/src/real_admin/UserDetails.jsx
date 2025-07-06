@@ -10,15 +10,19 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-
+import toast, { Toaster } from "react-hot-toast";
 
 export default function UserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [purchases, setPurchases] = useState([]);
   const [progress, setProgress] = useState([]);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  // ✅ Fetch user details
   useEffect(() => {
     axios
       .get(`/api/v1/admin/users/${id}`, { withCredentials: true })
@@ -27,33 +31,45 @@ export default function UserDetails() {
         setPurchases(res.data.purchases);
         setProgress(res.data.progress);
       })
-      .catch((err) => console.error("User details error:", err));
+      .catch((err) => {
+        console.error("Failed to load user details:", err);
+        toast.error("Failed to load user details");
+      });
   }, [id]);
 
-  
-const handleRoleChange = async (newRole) => {
-  try {
-    const res = await axios.put(
-      `/api/v1/admin/users/${id}`,
-      { role: newRole },
-      { withCredentials: true }
-    );
+  // ✅ Sync selectedRole when user loads
+  useEffect(() => {
+    if (user) {
+      setSelectedRole(user.role);
+    }
+  }, [user]);
 
-    setUser((prev) => ({ ...prev, role: newRole }));
-    alert(`User role updated to ${newRole}`);
-  } catch (error) {
-    console.error("Role update failed", error);
-    alert("Failed to update user role");
-  }
-};
+  // ✅ Handle role update
+  const handleRoleChange = async () => {
+    setIsUpdating(true);
+    try {
+      await axios.put(
+        `/api/v1/admin/users/${id}`,
+        { role: selectedRole },
+        { withCredentials: true }
+      );
+      setUser((prev) => ({ ...prev, role: selectedRole }));
+      toast.success(`Role updated to ${selectedRole}`);
+    } catch (error) {
+      console.error("Role update failed", error);
+      toast.error("Failed to update role");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
-
-  if (!user)
+  if (!user) {
     return (
       <p className="p-6 text-center text-gray-500">Loading user details...</p>
     );
+  }
 
-  // Bar chart data
+  // 📊 Prepare data for chart
   const chartData = progress.map((item) => ({
     name: item.courseId?.title || "Unknown",
     completed: item.completedLessons?.length ?? 0,
@@ -61,6 +77,9 @@ const handleRoleChange = async (newRole) => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-10 text-gray-900 dark:text-gray-100">
+      {/* Toast Container */}
+      <Toaster position="top-right" />
+
       {/* Back Button */}
       <button
         onClick={() => navigate("/real_admin/users")}
@@ -69,7 +88,7 @@ const handleRoleChange = async (newRole) => {
         ← Back to Users
       </button>
 
-      {/* User ID Card */}
+      {/* User Info Card */}
       <div className="flex flex-col md:flex-row items-center md:items-start bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 gap-6">
         <img
           src={
@@ -85,18 +104,29 @@ const handleRoleChange = async (newRole) => {
             <strong>Email:</strong> {user.email}
           </p>
 
-          <p>
+          {/* Role Selector */}
+          <div>
             <strong>Role:</strong>{" "}
-            <select
-              value={user.role}
-              onChange={(e) => handleRoleChange(e.target.value)}
-              className="ml-2 bg-white dark:bg-gray-700 text-black dark:text-white rounded px-2 py-1 border"
-            >
-              <option value="student">Student</option>
-              <option value="instructor">Instructor</option>
-              <option value="admin">Admin</option>
-            </select>
-          </p>
+            <div className="flex items-center gap-2 mt-1">
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="bg-white dark:bg-gray-700 text-black dark:text-white rounded px-2 py-1 border"
+              >
+                <option value="student">Student</option>
+                <option value="instructor">Instructor</option>
+                <option value="admin">Admin</option>
+              </select>
+
+              <button
+                onClick={handleRoleChange}
+                disabled={selectedRole === user.role || isUpdating}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded disabled:opacity-50"
+              >
+                {isUpdating ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
 
           <p>
             <strong>Enrolled Courses:</strong> {user.enrolledCourses.length}
