@@ -11,6 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
+
 export default function UserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,6 +29,24 @@ export default function UserDetails() {
       })
       .catch((err) => console.error("User details error:", err));
   }, [id]);
+
+  
+const handleRoleChange = async (newRole) => {
+  try {
+    const res = await axios.put(
+      `/api/v1/admin/users/${id}`,
+      { role: newRole },
+      { withCredentials: true }
+    );
+
+    setUser((prev) => ({ ...prev, role: newRole }));
+    alert(`User role updated to ${newRole}`);
+  } catch (error) {
+    console.error("Role update failed", error);
+    alert("Failed to update user role");
+  }
+};
+
 
   if (!user)
     return (
@@ -65,10 +84,20 @@ export default function UserDetails() {
           <p>
             <strong>Email:</strong> {user.email}
           </p>
+
           <p>
             <strong>Role:</strong>{" "}
-            <span className="capitalize">{user.role}</span>
+            <select
+              value={user.role}
+              onChange={(e) => handleRoleChange(e.target.value)}
+              className="ml-2 bg-white dark:bg-gray-700 text-black dark:text-white rounded px-2 py-1 border"
+            >
+              <option value="student">Student</option>
+              <option value="instructor">Instructor</option>
+              <option value="admin">Admin</option>
+            </select>
           </p>
+
           <p>
             <strong>Enrolled Courses:</strong> {user.enrolledCourses.length}
           </p>

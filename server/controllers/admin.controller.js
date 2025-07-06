@@ -68,3 +68,36 @@ export const getAdminStats = async (_, res) => {
     res.status(500).json({ success: false, message: "Error fetching stats" });
   }
 };
+
+
+// PUT /admin/users/:userId
+export const updateUserRole = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    if (!["student", "instructor", "admin"].includes(role)) {
+      return res.status(400).json({ success: false, message: "Invalid role" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    user.role = role;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: `User role updated to ${role}`,
+      user,
+    });
+  } catch (error) {
+    console.error("Update role error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update user role" });
+  }
+};
