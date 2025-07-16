@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { userLoggedIn } from "../features/authSlice";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({
@@ -241,7 +242,12 @@ const Login = () => {
                 </span>
               </div>
               <div className="text-sm text-right text-blue-500 hover:underline cursor-pointer">
-                <a href="/forgot-password">Forgot Password?</a>
+                <Link
+                  to="/forgot-password"
+                  className="text-blue-500 hover:underline"
+                >
+                  Forgot Password?
+                </Link>
               </div>
             </CardContent>
             <CardFooter>

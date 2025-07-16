@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 import { deleteMediaFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
 import sendEmail from "../utils/sendEmail.js";
+import jwt from "jsonwebtoken";
+
 
 export const register = async (req,res) => {
     try {
@@ -186,7 +188,7 @@ export const resetPassword = async (req, res) => {
 
     // Verify token
     let decoded;
-    try NADIA try {
+     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
       return res.status(400).json({ message: "Invalid or expired token" });
