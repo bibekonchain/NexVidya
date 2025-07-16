@@ -241,7 +241,7 @@ const Login = () => {
                 </span>
               </div>
               <div className="text-sm text-right text-blue-500 hover:underline cursor-pointer">
-                Forgot Password?
+                <a href="/forgot-password">Forgot Password?</a>
               </div>
             </CardContent>
             <CardFooter>

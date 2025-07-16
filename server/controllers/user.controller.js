@@ -2,6 +2,7 @@ import {User} from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 import { deleteMediaFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
+import sendEmail from "../utils/sendEmail.js";
 
 export const register = async (req,res) => {
     try {
@@ -147,3 +148,61 @@ export const updateProfile = async (req,res) => {
         })
     }
 }
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate reset token
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?email=${email}&token=${resetToken}`;
+
+    // Send email
+    const emailSent = await sendEmail({
+      to: email,
+      subject: "Password Reset Request",
+      text: `Click the link to reset your password: ${resetUrl}`,
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
+    });
+
+    if (!emailSent) {
+      return res.status(500).json({ message: "Failed to send reset email" });
+    }
+
+    res.status(200).json({ message: "Password reset link sent to your email" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, token } = req.params;
+    const { password } = req.body;
+
+    // Verify token
+    let decoded;
+    try NADIA try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update password
+    user.password = await bcrypt.hash(password, 10);
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

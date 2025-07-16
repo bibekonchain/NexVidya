@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import HeroSection from "./pages/student/HeroSection";
 import MainLayout from "./layout/MainLayout";
 import Courses from "./pages/student/Courses";
@@ -23,11 +25,7 @@ import {
 } from "./components/ProtectedRoutes";
 import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
-
 import AdminRoutes from "./real_admin/adminRoutes";
-import Users from "./real_admin/Users";
-
-
 import { useLoadUserQuery } from "@/features/api/authApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useSelector } from "react-redux";
@@ -57,6 +55,22 @@ function App() {
           element: (
             <AuthenticatedUser>
               <Login />
+            </AuthenticatedUser>
+          ),
+        },
+        {
+          path: "forgot-password",
+          element: (
+            <AuthenticatedUser>
+              <ForgotPassword />
+            </AuthenticatedUser>
+          ),
+        },
+        {
+          path: "reset-password",
+          element: (
+            <AuthenticatedUser>
+              <ResetPassword />
             </AuthenticatedUser>
           ),
         },
@@ -102,14 +116,10 @@ function App() {
             </ProtectedRoute>
           ),
         },
-
-        // ✅ Real Admin
         {
           path: "/real_admin/*",
           element: <AdminRoutes user={user} />,
         },
-
-        // ✅ Admin Sidebar Routes
         {
           path: "admin",
           element: (
