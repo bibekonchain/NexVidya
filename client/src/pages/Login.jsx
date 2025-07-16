@@ -14,21 +14,24 @@ import {
   useLoginUserMutation,
   useRegisterUserMutation,
 } from "@/features/api/authApi";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
-import { userLoggedIn } from "../features/authSlice"
+import { userLoggedIn } from "../features/authSlice";
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
-  const [loginInput, setLoginInput] = useState({ email: "", password: "" });
 
+  const [loginInput, setLoginInput] = useState({ email: "", password: "" });
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -41,7 +44,6 @@ const Login = () => {
       isSuccess: registerIsSuccess,
     },
   ] = useRegisterUserMutation();
-
   const [
     loginUser,
     {
@@ -61,43 +63,43 @@ const Login = () => {
     }
   };
 
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleRegistration = async (type) => {
-    const inputData = type === "signup" ? signupInput : loginInput;
-    const action = type === "signup" ? registerUser : loginUser;
-    await action(inputData);
+    if (type === "signup") {
+      const { name, email, password, confirmPassword } = signupInput;
+      if (!name || !email || !password || !confirmPassword)
+        return toast.error("All fields are required.");
+      if (!isValidEmail(email)) return toast.error("Invalid email format.");
+      if (password.length < 6)
+        return toast.error("Password must be at least 6 characters.");
+      if (password !== confirmPassword)
+        return toast.error("Passwords do not match.");
+      await registerUser({ name, email, password });
+    } else {
+      const { email, password } = loginInput;
+      if (!email || !password)
+        return toast.error("Email and password are required.");
+      if (!isValidEmail(email)) return toast.error("Invalid email format.");
+      await loginUser({ email, password });
+    }
   };
 
   useEffect(() => {
-    // Signup success
-    if (registerIsSuccess && registerData) {
+    if (registerIsSuccess && registerData)
       toast.success(registerData.message || "Signup successful.");
-    }
-
-    // Signup error
-    if (registerError) {
+    if (registerError)
       toast.error(registerError.data?.message || "Signup Failed");
-    }
-
-    // Login success
     if (loginIsSuccess && loginData) {
       dispatch(userLoggedIn({ user: loginData.user }));
       toast.success(loginData.message || "Login successful.");
-
       const { role } = loginData.user || {};
-
-      if (role === "real_admin") {
-        navigate("/real_admin/dashboard");
-      } else if (role === "admin" || role === "instructor") {
+      if (role === "real_admin") navigate("/real_admin/dashboard");
+      else if (role === "admin" || role === "instructor")
         navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
+      else navigate("/");
     }
-
-    // Login error
-    if (loginError) {
-      toast.error(loginError.data?.message || "Login Failed");
-    }
+    if (loginError) toast.error(loginError.data?.message || "Login Failed");
   }, [
     loginIsSuccess,
     loginData,
@@ -128,7 +130,7 @@ const Login = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
-                <Label htmlFor="name">Name</Label>
+                <Label>Name</Label>
                 <Input
                   type="text"
                   name="name"
@@ -139,7 +141,7 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
+                <Label>Email</Label>
                 <Input
                   type="email"
                   name="email"
@@ -149,14 +151,35 @@ const Login = () => {
                   required
                 />
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
+              <div className="space-y-1 relative">
+                <Label>Password</Label>
                 <Input
-                  type="password"
+                  type={showSignupPassword ? "text" : "password"}
                   name="password"
                   value={signupInput.password}
                   onChange={(e) => changeInputHandler(e, "signup")}
-                  placeholder="Eg. xyz"
+                  placeholder="Minimum 6 characters"
+                  required
+                />
+                <span
+                  onClick={() => setShowSignupPassword((prev) => !prev)}
+                  className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
+                >
+                  {showSignupPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <Label>Confirm Password</Label>
+                <Input
+                  type="password"
+                  name="confirmPassword"
+                  value={signupInput.confirmPassword}
+                  onChange={(e) => changeInputHandler(e, "signup")}
+                  placeholder="Re-enter password"
                   required
                 />
               </div>
@@ -190,7 +213,7 @@ const Login = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
+                <Label>Email</Label>
                 <Input
                   type="email"
                   name="email"
@@ -200,16 +223,25 @@ const Login = () => {
                   required
                 />
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
+              <div className="space-y-1 relative">
+                <Label>Password</Label>
                 <Input
-                  type="password"
+                  type={showLoginPassword ? "text" : "password"}
                   name="password"
                   value={loginInput.password}
                   onChange={(e) => changeInputHandler(e, "login")}
                   placeholder="Eg. Admin@123"
                   required
                 />
+                <span
+                  onClick={() => setShowLoginPassword((prev) => !prev)}
+                  className="absolute right-3 top-[38px] cursor-pointer text-gray-500"
+                >
+                  {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
+              </div>
+              <div className="text-sm text-right text-blue-500 hover:underline cursor-pointer">
+                Forgot Password?
               </div>
             </CardContent>
             <CardFooter>
