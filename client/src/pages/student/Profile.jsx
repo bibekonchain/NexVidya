@@ -19,6 +19,7 @@ import {
   useUpdateUserMutation,
 } from "@/features/api/authApi";
 import { toast } from "sonner";
+import InstructorRequest from "../student/InstructorRequest"
 
 const Profile = () => {
   const [name, setName] = useState("");
@@ -107,6 +108,10 @@ const Profile = () => {
               </span>
             </h1>
           </div>
+          <div>
+            <InstructorRequest />
+          </div>
+
           <Dialog>
             <DialogTrigger asChild>
               <Button size="sm" className="mt-2">
