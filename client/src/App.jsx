@@ -23,6 +23,7 @@ import {
   AuthenticatedUser,
   ProtectedRoute,
 } from "./components/ProtectedRoutes";
+
 import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import AdminRoutes from "./real_admin/adminRoutes";
@@ -120,6 +121,7 @@ function App() {
           path: "/real_admin/*",
           element: <AdminRoutes user={user} />,
         },
+
         {
           path: "admin",
           element: (

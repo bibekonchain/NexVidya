@@ -22,8 +22,15 @@ const userSchema = new mongoose.Schema(
     requestedInstructor: {
   type: Boolean,
   default: false,
-}
-,
+},
+ instructorRequest: {
+      fullName: String,
+      experience: Number,
+      subjectExpertise: String,
+      demoLink: String,
+      documents: String,
+      requestedAt: Date,
+    },
     enrolledCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,

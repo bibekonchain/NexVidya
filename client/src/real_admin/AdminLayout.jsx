@@ -1,7 +1,8 @@
 // src/real_admin/AdminLayout.jsx
 import { Link, useLocation } from "react-router-dom";
-import { BarChart2, Users } from "lucide-react";
+import { BarChart2, Users, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils"; // Optional helper for className merging
+import InstructorRequests from "./InstructorRequests";
 
 export default function AdminLayout({ children }) {
   const location = useLocation();
@@ -12,7 +13,17 @@ export default function AdminLayout({ children }) {
       label: "Dashboard",
       icon: <BarChart2 size={18} />,
     },
-    { to: "/real_admin/users", label: "Users", icon: <Users size={18} /> },
+    {
+      to: "/real_admin/users",
+      label: "Users",
+      icon: <Users size={18} />,
+    },
+    {
+      to: "/real_admin/instructor-requests",
+      label: "Instructor Requests",
+      element: <InstructorRequests />,
+      icon: <UserPlus size={18} />,
+    },
   ];
 
   return (

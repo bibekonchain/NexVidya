@@ -105,9 +105,16 @@ export const updateUserRole = async (req, res) => {
 // GET /admin/instructor-requests
 export const getInstructorRequests = async (req, res) => {
   try {
-    const requests = await User.find({ requestedInstructor: true, role: 'student' }).select('-password');
+   const requests = await User.find({
+     requestedInstructor: true,
+     role: "student",
+   }).select("name email role photoUrl instructorRequest createdAt");
+
+
     res.status(200).json({ success: true, users: requests });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching instructor requests" });
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching instructor requests" });
   }
 };

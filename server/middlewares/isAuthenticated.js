@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 
 const isAuthenticated = async (req, res, next) => {
@@ -10,7 +10,7 @@ const isAuthenticated = async (req, res, next) => {
         success: false,
       });
     }
-    const decode = jwt.verify(token, process.env.SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
     if (!decode) {
       return res.status(401).json({
         message: "Invalid token",

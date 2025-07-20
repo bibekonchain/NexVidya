@@ -20,10 +20,7 @@ export default function AdminRoutes() {
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users/:id" element={<UserDetails />} />
         <Route path="users" element={<Users />} />
-        <Route
-          path="/admin/instructor-requests"
-          element={<InstructorRequests />}
-        />
+        <Route path="instructor-requests" element={<InstructorRequests />} />
       </Routes>
     </AdminLayout>
   );
