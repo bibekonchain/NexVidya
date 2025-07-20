@@ -13,9 +13,9 @@ export const createCourse = async (req,res) => {
         }
 
         const course = await Course.create({
-            courseTitle,
-            category,
-            creator:req.id
+          courseTitle,
+          category,
+          creator: req.user._id,
         });
 
         return res.status(201).json({
@@ -91,7 +91,7 @@ export const getPublishedCourse = async (_,res) => {
 }
 export const getCreatorCourses = async (req,res) => {
     try {
-        const userId = req.id;
+        const userId = req.user._id;
         const courses = await Course.find({creator:userId});
         if(!courses){
             return res.status(404).json({

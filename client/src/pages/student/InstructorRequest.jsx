@@ -32,11 +32,36 @@ const InstructorRequest = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TO DO: Submit formData to backend
-    console.log("Submitting instructor request:", formData);
+
+    try {
+      const form = new FormData();
+      for (const key in formData) {
+        form.append(key, formData[key]);
+      }
+
+      const res = await fetch(
+        "http://localhost:8080/api/v1/user/request-instructor",
+        {
+          method: "POST",
+          credentials: "include",
+          body: form,
+        }
+      );
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Application submitted successfully!");
+      } else {
+        alert(data.message || "Failed to submit request.");
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("Something went wrong.");
+    }
   };
+
 
   return (
     <Dialog>

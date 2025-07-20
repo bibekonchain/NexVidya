@@ -1,9 +1,9 @@
 // middlewares/isAdmin.js
 import { User } from "../models/user.model.js";
 
-const isAdmin = async (req, res, next) => {
+const isAdmin =  (req, res, next) => {
   try {
-    const user = await User.findById(req.id);
+    const user = req.user;
     if (!user || user.role !== "admin") {
       return res.status(403).json({
         success: false,

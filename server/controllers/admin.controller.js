@@ -101,3 +101,13 @@ export const updateUserRole = async (req, res) => {
       .json({ success: false, message: "Failed to update user role" });
   }
 };
+
+// GET /admin/instructor-requests
+export const getInstructorRequests = async (req, res) => {
+  try {
+    const requests = await User.find({ requestedInstructor: true, role: 'student' }).select('-password');
+    res.status(200).json({ success: true, users: requests });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching instructor requests" });
+  }
+};

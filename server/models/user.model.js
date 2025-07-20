@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema(
       enum: ["instructor", "student", "admin"],
       default: "student",
     },
+    requestedInstructor: {
+  type: Boolean,
+  default: false,
+}
+,
     enrolledCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,
