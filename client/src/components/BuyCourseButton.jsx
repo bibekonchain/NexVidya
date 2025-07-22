@@ -11,11 +11,11 @@ const BuyCourseButton = ({ courseId }) => {
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-      const res = await axios.post(
-        "http://localhost:8080/api/v1/purchase/checkout/session",
-        { courseId, method },
-        { withCredentials: true }
-      );
+    const res = await axios.post(
+      "http://localhost:8080/api/v1/purchase/checkout/create-checkout-session",
+      { courseId, method },
+      { withCredentials: true }
+    );
 
       const { url, esewaPayload } = res.data;
 
