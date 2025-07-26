@@ -6,7 +6,6 @@ import { User } from "../models/user.model.js";
 import crypto from "crypto";
 import axios from "axios";
 
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req, res) => {
@@ -102,7 +101,6 @@ export const createCheckoutSession = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const stripeWebhook = async (req, res) => {
   let event;
@@ -219,8 +217,6 @@ export const getAllPurchasedCourse = async (_, res) => {
   }
 };
 
-
-
 export const initiateEsewaPayment = async (req, res) => {
   try {
     const { courseId } = req.body;
@@ -269,8 +265,6 @@ export const initiateEsewaPayment = async (req, res) => {
     res.status(500).json({ message: "Esewa payment initiation failed" });
   }
 };
-
-
 
 export const verifyEsewaPayment = async (req, res) => {
   try {
@@ -325,7 +319,6 @@ export const verifyEsewaPayment = async (req, res) => {
   }
 };
 
-
 export const verifyEsewaRedirect = async (req, res) => {
   try {
     const { oid, amt, refId } = req.query; // from esewa success redirect
@@ -350,7 +343,7 @@ export const verifyEsewaRedirect = async (req, res) => {
 
     if (verificationRes.data.status === "COMPLETE") {
       await CoursePurchase.findByIdAndUpdate(oid, {
-        status: "success",
+        status: "completed",
         paymentId: refId,
       });
 
