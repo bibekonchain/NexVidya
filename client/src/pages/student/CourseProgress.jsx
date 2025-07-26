@@ -11,6 +11,8 @@ import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
+import CertificateDownloadButton from "@/components/CertificateDownloadButton";
+
 
 const CourseProgress = () => {
   const params = useParams();
@@ -122,6 +124,14 @@ const CourseProgress = () => {
               }`}
             </h3>
           </div>
+
+          {/* ✅ Certificate Button: Show if course is completed */}
+          {completed && (
+            <div className="mt-4">
+              <CertificateDownloadButton courseId={courseId} />
+            </div>
+          )}
+          
         </div>
         {/* Lecture Sidebar  */}
         <div className="flex flex-col w-full md:w-2/5 border-t md:border-t-0 md:border-l border-gray-200 md:pl-4 pt-4 md:pt-0">
