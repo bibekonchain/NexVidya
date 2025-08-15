@@ -11,6 +11,7 @@ import courseProgressRoute from "./routes/courseProgress.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import certificateRoute from "./routes/certificate.route.js";
 // import seedRoute from "./routes/seed.route.js";
 
 dotenv.config({});
@@ -46,6 +47,9 @@ app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/progress", courseProgressRoute);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/certificates", express.static(path.join(__dirname, "certificates")));
+app.use("/api/v1/certificate", certificateRoute);
+app.use("/uploads/certificates", express.static("uploads/certificates"));
+
 
 // app.use("/api/v1/seed", seedRoute);
 

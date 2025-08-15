@@ -116,18 +116,7 @@ const InstructorRequests = () => {
                   )}
                 </div>
 
-                <div className="flex justify-end pt-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleApprove(user._id)}
-                    disabled={approvingId === user._id}
-                  >
-                    {approvingId === user._id ? (
-                      <Loader2 className="animate-spin w-4 h-4 mr-2" />
-                    ) : null}
-                    Approve
-                  </Button>
-                </div>
+                <div className="flex justify-end pt-2"></div>
               </CardContent>
             </Card>
           ))}

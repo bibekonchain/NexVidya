@@ -43,8 +43,8 @@ export const createCheckoutSession = async (req, res) => {
         success_url: `http://localhost:5173/course-progress/${courseId}`,
         cancel_url: `http://localhost:5173/course-detail/${courseId}`,
         metadata: {
-          courseId: courseId,
-          userId: userId,
+          courseId: String(courseId),
+          userId: String(userId),
         },
       });
 
