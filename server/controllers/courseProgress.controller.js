@@ -6,6 +6,18 @@ export const getCourseProgress = async (req, res) => {
     const { courseId } = req.params;
     const userId = req.user._id;
 
+    // 👇 If frontend calls `/progress/user`, return all progress for this user
+    if (courseId === "user") {
+      const allProgress = await CourseProgress.find({ userId }).populate({
+        path: "courseId",
+        populate: { path: "lectures" },
+      });
+
+      return res.status(200).json({
+        data: allProgress,
+      });
+    }
+
     // Step 1: fetch the user's course progress
     let courseProgress = await CourseProgress.findOne({
       courseId,
@@ -41,8 +53,10 @@ export const getCourseProgress = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const updateLectureProgress = async (req, res) => {
   try {
