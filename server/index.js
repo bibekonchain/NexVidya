@@ -12,6 +12,7 @@ import adminRoutes from "./routes/admin.route.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import certificateRoute from "./routes/certificate.route.js";
+import recommendationRoute from "./routes/recommendation.route.js";
 // import seedRoute from "./routes/seed.route.js";
 
 dotenv.config({});
@@ -22,11 +23,8 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 // default middleware
 app.use(express.json());
@@ -49,7 +47,7 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 app.use("/api/v1/certificate", certificateRoute);
 app.use("/uploads/certificates", express.static("uploads/certificates"));
-
+app.use("/api/v1/recommendations", recommendationRoute);
 
 // app.use("/api/v1/seed", seedRoute);
 

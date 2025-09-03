@@ -2,8 +2,13 @@ import React from "react";
 import Course from "./Course";
 import { useLoadUserQuery } from "@/features/api/authApi";
 
-const MyLearning = () => { 
-  const {data, isLoading} = useLoadUserQuery();
+import RecommendedCourses from "./RecommendedCourses";
+import { useSelector } from "react-redux";
+
+const MyLearning = () => {
+  const { data, isLoading } = useLoadUserQuery();
+
+  const user = useSelector((state) => state.user);
 
   const myLearning = data?.user.enrolledCourses || [];
   return (
@@ -17,10 +22,16 @@ const MyLearning = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {myLearning.map((course, index) => (
-              <Course key={index} course={course}/>
+              <Course key={index} course={course} />
             ))}
           </div>
         )}
+      </div>
+      <div>
+        <h1 className="font-bold text-2xl">Recommended Course</h1>
+
+        {/* Recommendations */}
+        <RecommendedCourses userId={user?._id} />
       </div>
     </div>
   );
