@@ -41,7 +41,7 @@ const InstructorRequest = () => {
         form.append(key, formData[key]);
       }
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/request-instructor`,
+        `${process.env.VITE_API_URL}/api/v1/user/request-instructor`,
         {
           method: "POST",
           credentials: "include",

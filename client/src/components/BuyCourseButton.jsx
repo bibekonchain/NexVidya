@@ -11,7 +11,7 @@ const BuyCourseButton = ({ courseId }) => {
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_URL;
+      const API_BASE_URL = process.env.VITE_API_URL;
       const res = await axios.post(
         "${API_BASE_URL}/api/v1/purchase/checkout/create-checkout-session",
         { courseId, method },
