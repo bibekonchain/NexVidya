@@ -35,7 +35,7 @@ import {
   Calendar,
   Target,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Course from "./Course";
 import {
   useLoadUserQuery,
@@ -67,8 +67,6 @@ const Profile = () => {
   useEffect(() => {
     refetch();
     fetchUserProgress();
-    fetchUserAchievements();
-    fetchLearningStats();
   }, []);
 
   useEffect(() => {
@@ -94,35 +92,6 @@ const Profile = () => {
       setCourseProgress(data.data || []); // depends on your backend response shape
     } catch (error) {
       console.error("Failed to fetch progress:", error);
-    }
-  };
-
-  // Fetch user achievements
-  const fetchUserAchievements = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/achievements/user",
-        {
-          credentials: "include",
-        }
-      );
-      const data = await response.json();
-      setAchievements(data.achievements || []);
-    } catch (error) {
-      console.error("Failed to fetch achievements:", error);
-    }
-  };
-
-  // Fetch learning statistics
-  const fetchLearningStats = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/api/v1/stats/user", {
-        credentials: "include",
-      });
-      const data = await response.json();
-      setLearningStats(data.stats || {});
-    } catch (error) {
-      console.error("Failed to fetch stats:", error);
     }
   };
 
