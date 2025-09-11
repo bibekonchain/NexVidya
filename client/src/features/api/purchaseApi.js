@@ -1,6 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const COURSE_PURCHASE_API = `${process.env.VITE_API_URL}/api/v1/purchase`;
+export const COURSE_PURCHASE_API = `${
+  import.meta.env.VITE_API_URL
+}/api/v1/purchase`;
 
 export const purchaseApi = createApi({
   reducerPath: "purchaseApi",

@@ -61,7 +61,7 @@ const CourseProgress = () => {
       try {
         setCertificateError(null);
         const res = await fetch(
-          `${process.env.VITE_API_URL}/api/v1/certificate/${courseId}`,
+          `${import.meta.env.VITE_API_URL}/api/v1/certificate/${courseId}`,
           { credentials: "include" }
         );
 
@@ -127,7 +127,7 @@ const CourseProgress = () => {
 
       // Generate certificate
       const res = await fetch(
-        `${process.env.VITE_API_URL}/api/v1/certificate/generate`,
+        `${import.meta.env.VITE_API_URL}/api/v1/certificate/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -168,7 +168,7 @@ const CourseProgress = () => {
 
   const handleDownloadCertificate = () => {
     if (certificateUrl) {
-      window.open(`${process.env.VITE_API_URL}${certificateUrl}`, "_blank");
+      window.open(`${import.meta.env.VITE_API_URL}${certificateUrl}`, "_blank");
     }
   };
 

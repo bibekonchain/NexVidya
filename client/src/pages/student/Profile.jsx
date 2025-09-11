@@ -83,7 +83,7 @@ const Profile = () => {
   const fetchUserProgress = async () => {
     try {
       const response = await fetch(
-        `${process.env.VITE_API_URL}/api/v1/progress/user`,
+        `${import.meta.env.VITE_API_URL}/api/v1/progress/user`,
         { credentials: "include" }
       );
 

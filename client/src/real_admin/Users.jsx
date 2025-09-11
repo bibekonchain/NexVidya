@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import API from "../features/api/api"; // ✅ use your configured axios instance
 
 export default function Users() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("/api/v1/admin/users", { withCredentials: true })
+    API.get("/admin/users") // ✅ no need to repeat /api/v1, it's in baseURL
       .then((res) => setUsers(res.data.users || []))
       .catch((err) => console.error("Failed to fetch users:", err));
   }, []);
