@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js",        // 🔑 for Render (production)
-    "dev": "nodemon index.js"   
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
