@@ -10,8 +10,6 @@ import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // 🎓 Generate certificate on course completion
-// 🎓 Generate certificate on course completion
-// 🎓 Generate certificate on course completion
 export const generateCertificate = async (req, res) => {
   try {
     const { courseId } = req.body;
@@ -98,11 +96,23 @@ export const generateCertificate = async (req, res) => {
   }
 };
 
-// At the bottom of certificateController.js (or wherever appropriate)
 export const getCertificateByCourseId = async (req, res) => {
   try {
     const { courseId } = req.params;
     const studentId = req.user._id;
+
+    // First check if course is completed
+    const courseProgress = await CourseProgress.findOne({
+      courseId,
+      userId: studentId,
+    });
+
+    if (!courseProgress || !courseProgress.completed) {
+      return res.status(404).json({ 
+        message: "Certificate not available - course not completed",
+        completed: false
+      });
+    }
 
     const certificate = await Certificate.findOne({
       course: courseId,
@@ -110,7 +120,11 @@ export const getCertificateByCourseId = async (req, res) => {
     });
 
     if (!certificate) {
-      return res.status(404).json({ message: "Certificate not found" });
+      return res.status(404).json({ 
+        message: "Certificate not found but course is completed - generate certificate first",
+        completed: true,
+        needsGeneration: true
+      });
     }
 
     res.status(200).json({

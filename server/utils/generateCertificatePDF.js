@@ -28,7 +28,7 @@ const generateCertificatePDF = async ({
         "Certificate template not found. Place your template at server/assets/certificate-template.png"
       );
     }
-    console.log("🖼 Certificate template found:", templatePath);
+    console.log(" Certificate template found:", templatePath);
 
     // Load template image
     const template = await loadImage(templatePath);
