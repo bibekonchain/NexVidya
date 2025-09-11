@@ -83,11 +83,10 @@ const Profile = () => {
   const fetchUserProgress = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/progress/user",
-        {
-          credentials: "include",
-        }
+        `${process.env.REACT_APP_API_URL}/api/v1/progress/user`,
+        { credentials: "include" }
       );
+
       const data = await response.json();
       setCourseProgress(data.data || []); // depends on your backend response shape
     } catch (error) {

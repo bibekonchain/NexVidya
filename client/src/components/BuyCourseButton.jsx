@@ -11,11 +11,12 @@ const BuyCourseButton = ({ courseId }) => {
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-    const res = await axios.post(
-      "http://localhost:8080/api/v1/purchase/checkout/create-checkout-session",
-      { courseId, method },
-      { withCredentials: true }
-    );
+      const API_BASE_URL = process.env.REACT_APP_API_URL;
+      const res = await axios.post(
+        "${API_BASE_URL}/api/v1/purchase/checkout/create-checkout-session",
+        { courseId, method },
+        { withCredentials: true }
+      );
 
       const { url, esewaPayload } = res.data;
 
@@ -59,7 +60,11 @@ const BuyCourseButton = ({ courseId }) => {
         <option value="khalti">💜 Pay with Khalti</option>
       </select>
 
-      <Button onClick={handlePurchase} className="w-full font-semibold text-lg" disabled={isLoading}>
+      <Button
+        onClick={handlePurchase}
+        className="w-full font-semibold text-lg"
+        disabled={isLoading}
+      >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

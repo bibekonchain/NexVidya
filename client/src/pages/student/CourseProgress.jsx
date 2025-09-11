@@ -14,7 +14,7 @@ import {
   Download,
   Loader2,
 } from "lucide-react";
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -61,10 +61,8 @@ const CourseProgress = () => {
       try {
         setCertificateError(null);
         const res = await fetch(
-          `http://localhost:8080/api/v1/certificate/${courseId}`,
-          {
-            credentials: "include",
-          }
+          `${process.env.REACT_APP_API_URL}/api/v1/certificate/${courseId}`,
+          { credentials: "include" }
         );
 
         if (res.status === 404) {
@@ -129,7 +127,7 @@ const CourseProgress = () => {
 
       // Generate certificate
       const res = await fetch(
-        "http://localhost:8080/api/v1/certificate/generate",
+        `${process.env.REACT_APP_API_URL}/api/v1/certificate/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -170,7 +168,10 @@ const CourseProgress = () => {
 
   const handleDownloadCertificate = () => {
     if (certificateUrl) {
-      window.open(`http://localhost:8080${certificateUrl}`, "_blank");
+      window.open(
+        `${process.env.REACT_APP_API_URL}${certificateUrl}`,
+        "_blank"
+      );
     }
   };
 
