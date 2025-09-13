@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,12 @@ const InstructorRequests = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("/api/v1/admin/instructor-requests", {
-        withCredentials: true,
-      });
+      const { data } = await axios.get(
+        `${API_URL}/api/v1/admin/instructor-requests`,
+        {
+          withCredentials: true,
+        }
+      );
       setRequests(data.users);
     } catch (err) {
       toast.error("Failed to load instructor requests.");
