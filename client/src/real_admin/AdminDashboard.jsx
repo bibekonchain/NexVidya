@@ -13,9 +13,11 @@ import {
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     axios
-      .get("/api/v1/admin/stats", { withCredentials: true })
+      .get(`${API_URL}/api/v1/admin/stats`, { withCredentials: true })
       .then((res) => setStats(res.data.stats))
       .catch((err) => console.error("Stats Error:", err));
   }, []);
@@ -50,9 +52,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto text-gray-900 dark:text-gray-100">
-      <h1 className="text-3xl  font-bold mb-6">
-        📊 Admin Dashboard
-      </h1>
+      <h1 className="text-3xl  font-bold mb-6">📊 Admin Dashboard</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {cards.map((card) => (
           <StatCard key={card.title} {...card} />
