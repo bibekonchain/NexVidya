@@ -1,9 +1,8 @@
 // server/utils/generateCertificatePDF.js
-import { createCanvas, loadImage } from "canvas";
+import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import PDFDocument from "pdfkit";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,132 +13,87 @@ const generateCertificatePDF = async ({
   completionDate,
   outputPath,
 }) => {
-  try {
-    console.log("⚙️ Starting certificate generation...");
+  let browser;
 
-    // Locate the certificate template
-    const templatePath = path.join(
-      __dirname,
-      "../assets/certificate-template.png"
-    );
+  try {
+    console.log("🎓 Starting certificate generation...");
+
+    // Read HTML template
+    const templatePath = path.join(__dirname, "../templates/certificate.html");
 
     if (!fs.existsSync(templatePath)) {
-      throw new Error(
-        "Certificate template not found. Place your template at server/assets/certificate-template.png"
-      );
+      throw new Error(`Template not found at: ${templatePath}`);
     }
-    console.log(" Certificate template found:", templatePath);
 
-    // Load template image
-    const template = await loadImage(templatePath);
-    console.log(
-      "✅ Template loaded. Width:",
-      template.width,
-      "Height:",
-      template.height
-    );
+    let htmlContent = fs.readFileSync(templatePath, "utf8");
 
-    // Create canvas
-    const canvas = createCanvas(template.width, template.height);
-    const ctx = canvas.getContext("2d");
-
-    // Draw background template
-    ctx.drawImage(template, 0, 0);
-
-    // Set text alignment
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    // Scale text size based on template size
-    const baseWidth = 1920;
-    const scaleFactor = canvas.width / baseWidth;
-
-    // Helper to draw wrapped text if needed
-    const drawWrappedText = (text, y, fontSize, color) => {
-      ctx.fillStyle = color;
-      ctx.font = `bold ${Math.round(
-        fontSize * scaleFactor
-      )}px "Times New Roman", serif`;
-
-      const maxWidth = canvas.width * 0.7;
-      if (ctx.measureText(text).width <= maxWidth) {
-        ctx.fillText(text, canvas.width / 2, y);
-        return;
-      }
-
-      const words = text.split(" ");
-      let line = "";
-      const lines = [];
-
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + " ";
-        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
-          lines.push(line);
-          line = words[n] + " ";
-        } else {
-          line = testLine;
-        }
-      }
-      lines.push(line);
-
-      const lineHeight = Math.round(fontSize * 1.25 * scaleFactor);
-      const startY = y - ((lines.length - 1) * lineHeight) / 2;
-
-      lines.forEach((l, i) => {
-        ctx.fillText(l.trim(), canvas.width / 2, startY + i * lineHeight);
-      });
-    };
-
-    // Draw student name
-    drawWrappedText(studentName, canvas.height * 0.42, 48, "#1a202c");
-
-    // Draw course title
-    drawWrappedText(`"${courseTitle}"`, canvas.height * 0.58, 32, "#2d3748");
-
-    // Draw completion date
+    // Format completion date
     const formattedDate = completionDate.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-    ctx.fillStyle = "#4a5568";
-    ctx.font = `${Math.round(24 * scaleFactor)}px "Times New Roman", serif`;
-    ctx.fillText(formattedDate, canvas.width / 2, canvas.height * 0.72);
 
-    // Draw instructor name
-    ctx.fillStyle = "#2d3748";
-    ctx.font = `${Math.round(26 * scaleFactor)}px "Times New Roman", serif`;
-    ctx.fillText(instructorName, canvas.width / 2, canvas.height * 0.85);
+    // Replace placeholders with actual data
+    htmlContent = htmlContent
+      .replace(/{{STUDENT_NAME}}/g, studentName)
+      .replace(/{{COURSE_TITLE}}/g, courseTitle)
+      .replace(/{{INSTRUCTOR_NAME}}/g, instructorName)
+      .replace(/{{COMPLETION_DATE}}/g, formattedDate);
 
-    // Create PDF
-    const pdf = new PDFDocument({
-      size: [canvas.width * 0.75, canvas.height * 0.75],
-      layout: "landscape",
-      margins: { top: 0, left: 0, right: 0, bottom: 0 },
+    console.log("✅ Template loaded and variables replaced");
+
+    // Launch Puppeteer
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+        "--disable-gpu",
+      ],
     });
 
-    const writeStream = fs.createWriteStream(outputPath);
-    pdf.pipe(writeStream);
+    const page = await browser.newPage();
 
-    // Insert certificate image into PDF
-    const buffer = canvas.toBuffer("image/png");
-    pdf.image(buffer, 0, 0, {
-      width: canvas.width * 0.75,
-      height: canvas.height * 0.75,
+    // Set content and wait for fonts to load
+    await page.setContent(htmlContent, {
+      waitUntil: ["networkidle0", "domcontentloaded"],
     });
 
-    pdf.end();
+    // Add small delay to ensure fonts are loaded
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    return new Promise((resolve, reject) => {
-      writeStream.on("finish", () => {
-        console.log("✅ Certificate PDF generated at:", outputPath);
-        resolve(outputPath);
-      });
-      writeStream.on("error", reject);
+    console.log("✅ Page content set, generating PDF...");
+
+    // Generate PDF
+    await page.pdf({
+      path: outputPath,
+      format: "A4",
+      landscape: true,
+      printBackground: true,
+      margin: {
+        top: "0.5in",
+        right: "0.5in",
+        bottom: "0.5in",
+        left: "0.5in",
+      },
+      preferCSSPageSize: true,
     });
-  } catch (err) {
-    console.error("❌ Error generating certificate:", err);
-    throw err;
+
+    console.log("✅ Certificate PDF generated successfully at:", outputPath);
+    return outputPath;
+  } catch (error) {
+    console.error("❌ Error generating certificate:", error);
+    throw error;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 };
 

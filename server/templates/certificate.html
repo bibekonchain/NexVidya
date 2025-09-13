@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate of Completion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap");
+
+      .certificate-container {
+        width: 297mm;
+        height: 210mm;
+        font-family: "Playfair Display", serif;
+      }
+
+      .decorative-border {
+        border: 8px solid #1e40af;
+        border-image: linear-gradient(45deg, #1e40af, #3b82f6, #60a5fa) 1;
+      }
+
+      .signature-line {
+        border-bottom: 2px solid #374151;
+        width: 200px;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+        }
+        .certificate-container {
+          width: 100vw;
+          height: 100vh;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-white">
+    <div
+      class="certificate-container mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 decorative-border relative overflow-hidden"
+    >
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 opacity-5">
+        <div
+          class="absolute top-10 left-10 w-32 h-32 border-4 border-blue-300 rounded-full"
+        ></div>
+        <div
+          class="absolute top-20 right-16 w-24 h-24 border-4 border-indigo-300 rounded-full"
+        ></div>
+        <div
+          class="absolute bottom-16 left-20 w-28 h-28 border-4 border-blue-300 rounded-full"
+        ></div>
+        <div
+          class="absolute bottom-10 right-10 w-36 h-36 border-4 border-indigo-300 rounded-full"
+        ></div>
+      </div>
+
+      <!-- Header with Logo -->
+      <div class="relative z-10 pt-8 text-center">
+        <div class="mb-4">
+          <!-- Replace with your actual logo URL -->
+          <img
+            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMxRTQwQUYiLz4KPHR0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk48L3RleHQ+Cjwvc3ZnPg=="
+            alt="Logo"
+            class="w-16 h-16 mx-auto mb-2"
+          />
+        </div>
+        <h1 class="text-2xl font-semibold text-gray-600 tracking-wide">
+          NexVidya Learning Platform
+        </h1>
+      </div>
+
+      <!-- Main Certificate Content -->
+      <div class="relative z-10 px-16 py-8 text-center">
+        <!-- Certificate Title -->
+        <div class="mb-8">
+          <h2 class="text-6xl font-bold text-gray-800 mb-4">Certificate</h2>
+          <h3 class="text-3xl font-semibold text-gray-600">of Completion</h3>
+          <div
+            class="w-32 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto mt-4"
+          ></div>
+        </div>
+
+        <!-- Presentation Text -->
+        <div class="mb-8">
+          <p class="text-2xl text-gray-600 mb-4">This is to certify that</p>
+
+          <!-- Student Name -->
+          <div class="mb-6">
+            <h4 class="text-5xl font-bold text-gray-800 mb-2">
+              {{STUDENT_NAME}}
+            </h4>
+            <div class="w-80 h-1 bg-gray-300 mx-auto"></div>
+          </div>
+
+          <p class="text-2xl text-gray-600 mb-4">
+            has successfully completed the course
+          </p>
+
+          <!-- Course Title -->
+          <div class="mb-8">
+            <h5 class="text-4xl font-semibold text-blue-600 mb-2">
+              "{{COURSE_TITLE}}"
+            </h5>
+            <div class="w-96 h-1 bg-gray-300 mx-auto"></div>
+          </div>
+        </div>
+
+        <!-- Completion Date -->
+        <div class="mb-12">
+          <p class="text-xl text-gray-600">Completed on</p>
+          <p class="text-2xl font-semibold text-gray-800">
+            {{COMPLETION_DATE}}
+          </p>
+        </div>
+      </div>
+
+      <!-- Footer with Signature -->
+      <div class="absolute bottom-8 left-0 right-0 px-16">
+        <div class="flex justify-between items-end">
+          <!-- Left: Instructor Signature -->
+          <div class="text-center">
+            <div class="signature-line mb-3"></div>
+            <p class="text-lg font-semibold text-gray-700">
+              {{INSTRUCTOR_NAME}}
+            </p>
+            <p class="text-sm text-gray-500">Course Instructor</p>
+          </div>
+
+          <!-- Center: Seal/Badge -->
+          <div class="flex flex-col items-center">
+            <div
+              class="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center mb-2"
+            >
+              <div
+                class="w-20 h-20 rounded-full bg-white flex items-center justify-center"
+              >
+                <svg
+                  class="w-10 h-10 text-blue-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500">Official Seal</p>
+          </div>
+
+          <!-- Right: Date -->
+          <div class="text-center">
+            <div class="signature-line mb-3"></div>
+            <p class="text-lg font-semibold text-gray-700">Date Issued</p>
+            <p class="text-sm text-gray-500">{{COMPLETION_DATE}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

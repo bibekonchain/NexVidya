@@ -29,13 +29,18 @@ const __dirname = path.dirname(__filename);
 // default middleware
 app.use(express.json());
 app.use(cookieParser());
+// Serve static certificate files
+app.use(
+  "/certificates",
+  express.static(path.join(__dirname, "public/certificates"))
+);
 
 app.use(
   cors({
     origin: function (origin, callback) {
       const allowedOrigins = [
-        "http://localhost:5173",               // local dev
-        "https://nexvidya-client.onrender.com" // deployed frontend
+        "http://localhost:5173", // local dev
+        "https://nexvidya-client.onrender.com", // deployed frontend
       ];
 
       if (!origin || allowedOrigins.includes(origin)) {
@@ -48,7 +53,6 @@ app.use(
   })
 );
 
-
 // apis
 app.use("/api/v1/media", mediaRoute);
 app.use("/api/v1/user", userRoute);
@@ -56,7 +60,6 @@ app.use("/api/v1/course", courseRoute);
 app.use("/api/v1/purchase", purchaseRoute);
 app.use("/api/v1/progress", courseProgressRoute);
 app.use("/api/v1/admin", adminRoutes);
-app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 app.use("/api/v1/certificate", certificateRoute);
 app.use("/uploads/certificates", express.static("uploads/certificates"));
 app.use("/api/v1/recommendations", recommendationRoute);

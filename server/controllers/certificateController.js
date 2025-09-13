@@ -1,3 +1,4 @@
+// server/controllers/certificateController.js
 import path from "path";
 import { fileURLToPath } from "url";
 import generateCertificatePDF from "../utils/generateCertificatePDF.js";
@@ -15,15 +16,21 @@ export const generateCertificate = async (req, res) => {
     const { courseId } = req.body;
     const studentId = req.user._id;
 
+    // Validate required data
+    if (!courseId) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
+    // Fetch all required data
     const course = await Course.findById(courseId).populate("creator");
     const student = await User.findById(studentId);
     const instructor = course?.creator;
 
     if (!student || !course || !instructor) {
-      return res.status(404).json({ message: "Data not found" });
+      return res.status(404).json({ message: "Required data not found" });
     }
 
-    // ✅ Use CourseProgress model to verify completion
+    // Verify course completion
     const courseProgress = await CourseProgress.findOne({
       courseId,
       userId: studentId,
@@ -33,7 +40,7 @@ export const generateCertificate = async (req, res) => {
       return res.status(400).json({ message: "Course not fully completed" });
     }
 
-    // ✅ Check if certificate already exists
+    // Check if certificate already exists
     const existingCert = await Certificate.findOne({
       course: courseId,
       student: studentId,
@@ -47,34 +54,40 @@ export const generateCertificate = async (req, res) => {
       });
     }
 
-    const fileName = `certificate_${studentId}_${courseId}.pdf`;
-    const outputPath = path.join(__dirname, "../certificates", fileName);
+    // Create necessary directories
+    const certificatesDir = path.join(__dirname, "../public/certificates");
+    const templatesDir = path.join(__dirname, "../templates");
 
-    // Create certificates directory if it doesn't exist
-    const certificatesDir = path.join(__dirname, "../certificates");
     if (!fs.existsSync(certificatesDir)) {
       fs.mkdirSync(certificatesDir, { recursive: true });
+      console.log("📁 Created certificates directory");
     }
 
-    // Create assets directory if it doesn't exist
-    const assetsDir = path.join(__dirname, "../assets");
-    if (!fs.existsSync(assetsDir)) {
-      fs.mkdirSync(assetsDir, { recursive: true });
+    if (!fs.existsSync(templatesDir)) {
+      fs.mkdirSync(templatesDir, { recursive: true });
+      console.log("📁 Created templates directory");
     }
+
+    // Generate unique filename
+    const fileName = `certificate_${studentId}_${courseId}_${Date.now()}.pdf`;
+    const outputPath = path.join(certificatesDir, fileName);
 
     // Get completion date
     const completionDate = courseProgress.completedAt || new Date();
 
+    // Generate PDF certificate
     await generateCertificatePDF({
       studentName: student.name,
-      courseTitle: course.title,
+      courseTitle: course.courseTitle, // Changed from course.title
       instructorName: instructor.name,
       completionDate,
       outputPath,
     });
 
+    // Create certificate URL (accessible via static files)
     const certificateUrl = `/certificates/${fileName}`;
 
+    // Save certificate record to database
     const cert = await Certificate.create({
       student: studentId,
       course: courseId,
@@ -82,16 +95,19 @@ export const generateCertificate = async (req, res) => {
       fileUrl: certificateUrl,
     });
 
+    console.log("🎉 Certificate generated and saved:", fileName);
+
     res.status(200).json({
       message: "Certificate generated successfully! 🎓",
       url: certificateUrl,
       certificateId: cert._id,
+      downloadUrl: `${req.protocol}://${req.get("host")}${certificateUrl}`,
     });
   } catch (error) {
     console.error("Certificate generation error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: error.message || "Internal server error",
-      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };
@@ -108,9 +124,9 @@ export const getCertificateByCourseId = async (req, res) => {
     });
 
     if (!courseProgress || !courseProgress.completed) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "Certificate not available - course not completed",
-        completed: false
+        completed: false,
       });
     }
 
@@ -120,10 +136,11 @@ export const getCertificateByCourseId = async (req, res) => {
     });
 
     if (!certificate) {
-      return res.status(404).json({ 
-        message: "Certificate not found but course is completed - generate certificate first",
+      return res.status(404).json({
+        message:
+          "Certificate not found but course is completed - generate certificate first",
         completed: true,
-        needsGeneration: true
+        needsGeneration: true,
       });
     }
 
@@ -131,6 +148,7 @@ export const getCertificateByCourseId = async (req, res) => {
       message: "Certificate found",
       url: certificate.fileUrl,
       certificateId: certificate._id,
+      downloadUrl: `${req.protocol}://${req.get("host")}${certificate.fileUrl}`,
     });
   } catch (error) {
     console.error("Error fetching certificate:", error);
