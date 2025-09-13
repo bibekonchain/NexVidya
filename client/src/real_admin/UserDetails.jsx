@@ -22,10 +22,12 @@ export default function UserDetails() {
   const [selectedRole, setSelectedRole] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // ✅ Fetch user details
   useEffect(() => {
     axios
-      .get(`/api/v1/admin/users/${id}`, { withCredentials: true })
+      .get(`${API_URL}/api/v1/admin/users/${id}`, { withCredentials: true })
       .then((res) => {
         setUser(res.data.user);
         setPurchases(res.data.purchases);
@@ -49,7 +51,7 @@ export default function UserDetails() {
     setIsUpdating(true);
     try {
       await axios.put(
-        `/api/v1/admin/users/${id}`,
+        `${API_URL}/api/v1/admin/users/${id}`,
         { role: selectedRole },
         { withCredentials: true }
       );

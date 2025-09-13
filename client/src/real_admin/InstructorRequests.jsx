@@ -11,6 +11,8 @@ const InstructorRequests = () => {
   const [loading, setLoading] = useState(false);
   const [approvingId, setApprovingId] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -29,7 +31,7 @@ const InstructorRequests = () => {
     try {
       setApprovingId(userId);
       await axios.put(
-        `/api/v1/admin/update-role/${userId}`,
+        `${API_URL}/api/v1/admin/update-role/${userId}`,
         { role: "instructor" },
         {
           withCredentials: true,
