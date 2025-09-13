@@ -20,10 +20,10 @@ const userSchema = new mongoose.Schema(
       default: "student",
     },
     requestedInstructor: {
-  type: Boolean,
-  default: false,
-},
- instructorRequest: {
+      type: Boolean,
+      default: false,
+    },
+    instructorRequest: {
       fullName: String,
       experience: Number,
       subjectExpertise: String,
@@ -44,5 +44,13 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    delete ret.password;
+    delete ret.__v;
+    return ret;
+  },
+});
 
 export const User = mongoose.model("User", userSchema);
