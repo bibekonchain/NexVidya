@@ -53,7 +53,6 @@ const generateCertificatePDF = async ({
         "--disable-accelerated-2d-canvas",
         "--no-first-run",
         "--no-zygote",
-        "--single-process",
         "--disable-gpu",
       ],
     });
@@ -96,5 +95,27 @@ const generateCertificatePDF = async ({
     }
   }
 };
+
+// If run directly (not imported), run a test
+if (process.argv[1].includes("generateCertificatePDF.js")) {
+  const testOutput = path.join(
+    __dirname,
+    "../certificates/test-certificate.pdf"
+  );
+
+  generateCertificatePDF({
+    studentName: "Test Student",
+    courseTitle: "Debugging 101",
+    instructorName: "John Doe",
+    completionDate: new Date(),
+    outputPath: testOutput,
+  })
+    .then((file) => {
+      console.log("🎉 Test certificate created at:", file);
+    })
+    .catch((err) => {
+      console.error("🔥 Test run failed:", err);
+    });
+}
 
 export default generateCertificatePDF;

@@ -117,7 +117,7 @@ export const getCertificateByCourseId = async (req, res) => {
     const { courseId } = req.params;
     const studentId = req.user._id;
 
-    // First check if course is completed
+    // 1️⃣ Check if course is completed
     const courseProgress = await CourseProgress.findOne({
       courseId,
       userId: studentId,
@@ -130,20 +130,57 @@ export const getCertificateByCourseId = async (req, res) => {
       });
     }
 
-    const certificate = await Certificate.findOne({
+    // 2️⃣ Check if certificate already exists
+    let certificate = await Certificate.findOne({
       course: courseId,
       student: studentId,
     });
 
     if (!certificate) {
-      return res.status(404).json({
-        message:
-          "Certificate not found but course is completed - generate certificate first",
-        completed: true,
-        needsGeneration: true,
+      // 3️⃣ Fetch course, student, instructor info
+      const course = await Course.findById(courseId).populate("creator");
+      const student = await User.findById(studentId);
+      const instructor = course?.creator;
+
+      if (!student || !course || !instructor) {
+        return res.status(404).json({ message: "Required data not found" });
+      }
+
+      // 4️⃣ Create directories if missing
+      const certificatesDir = path.join(__dirname, "../public/certificates");
+      if (!fs.existsSync(certificatesDir)) {
+        fs.mkdirSync(certificatesDir, { recursive: true });
+        console.log("📁 Created certificates directory");
+      }
+
+      // 5️⃣ Generate unique filename & output path
+      const fileName = `certificate_${studentId}_${courseId}_${Date.now()}.pdf`;
+      const outputPath = path.join(certificatesDir, fileName);
+
+      const completionDate = courseProgress.completedAt || new Date();
+
+      // 6️⃣ Generate the PDF
+      await generateCertificatePDF({
+        studentName: student.name,
+        courseTitle: course.courseTitle,
+        instructorName: instructor.name,
+        completionDate,
+        outputPath,
       });
+
+      // 7️⃣ Save certificate record to DB
+      const certificateUrl = `/certificates/${fileName}`;
+      certificate = await Certificate.create({
+        student: studentId,
+        course: courseId,
+        instructor: instructor._id,
+        fileUrl: certificateUrl,
+      });
+
+      console.log("🎉 Certificate generated and saved:", fileName);
     }
 
+    // 8️⃣ Return certificate info
     res.status(200).json({
       message: "Certificate found",
       url: certificate.fileUrl,
@@ -151,7 +188,7 @@ export const getCertificateByCourseId = async (req, res) => {
       downloadUrl: `${req.protocol}://${req.get("host")}${certificate.fileUrl}`,
     });
   } catch (error) {
-    console.error("Error fetching certificate:", error);
+    console.error("Error fetching/generating certificate:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
