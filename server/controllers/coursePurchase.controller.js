@@ -40,8 +40,9 @@ export const createCheckoutSession = async (req, res) => {
           },
         ],
         mode: "payment",
-        success_url: `http://localhost:5173/course-progress/${courseId}`,
-        cancel_url: `http://localhost:5173/course-detail/${courseId}`,
+        success_url: `${process.env.FRONTEND_URL}/course-progress/${courseId}`,
+        cancel_url: `${process.env.FRONTEND_URL}/course-detail/${courseId}`,
+
         metadata: {
           courseId: String(courseId),
           userId: String(userId),
@@ -73,8 +74,8 @@ export const createCheckoutSession = async (req, res) => {
         tAmt: course.coursePrice,
         pid, // use generated pid here
         scd: process.env.ESEWA_MERCHANT_ID,
-        su: `http://localhost:8080/api/v1/purchase/checkout/verify-esewa?courseId=${courseId}&userId=${userId}`,
-        fu: `http://localhost:5173/course-detail/${courseId}`,
+        su: `${process.env.BACKEND_URL}/api/v1/purchase/checkout/verify-esewa?courseId=${courseId}&userId=${userId}`,
+        fu: `${process.env.FRONTEND_URL}/course-detail/${courseId}`,
       };
 
       // Save CoursePurchase with paymentId = pid
@@ -140,14 +141,6 @@ export const stripeWebhook = async (req, res) => {
       }
       purchase.status = "completed";
 
-      // Make all lectures visible by setting `isPreviewFree` to true
-      if (purchase.courseId && purchase.courseId.lectures.length > 0) {
-        await Lecture.updateMany(
-          { _id: { $in: purchase.courseId.lectures } },
-          { $set: { isPreviewFree: true } }
-        );
-      }
-
       await purchase.save();
 
       // Update user's enrolledCourses
@@ -179,23 +172,40 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
       .populate({ path: "creator" })
       .populate({ path: "lectures" });
 
-    const purchased = await CoursePurchase.findOne({
-      userId,
-      courseId,
-      status: "completed",
-    });
-    console.log(purchased);
-
     if (!course) {
       return res.status(404).json({ message: "course not found!" });
     }
 
+    // Check if user has completed purchase
+    const purchaseRecord = await CoursePurchase.findOne({
+      userId,
+      courseId,
+      status: "completed",
+    });
+
+    // Also check if user is enrolled in the course
+    const user = await User.findById(userId);
+    const isEnrolled =
+      user &&
+      user.enrolledCourses.some(
+        (enrolledCourseId) =>
+          enrolledCourseId.toString() === courseId.toString()
+      );
+
+    // User is considered to have purchased if they have a completed purchase OR are enrolled
+    const purchased = !!purchaseRecord || isEnrolled;
+
+    console.log("Purchase record:", !!purchaseRecord);
+    console.log("Is enrolled:", isEnrolled);
+    console.log("Final purchased status:", purchased);
+
     return res.status(200).json({
       course,
-      purchased: !!purchased, // true if purchased, false otherwise
+      purchased: purchased,
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -302,11 +312,6 @@ export const verifyEsewaPayment = async (req, res) => {
         $addToSet: { enrolledStudents: purchase.userId },
       });
 
-      await Lecture.updateMany(
-        { _id: { $in: (await Course.findById(purchase.courseId)).lectures } },
-        { isPreviewFree: true }
-      );
-
       return res
         .status(200)
         .json({ message: "Payment verified & course enrolled" });
@@ -351,16 +356,18 @@ export const verifyEsewaRedirect = async (req, res) => {
         $addToSet: { enrolledCourses: courseId },
       });
 
-      return res.redirect(`http://localhost:5173/course-progress/${courseId}`);
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/course-progress/${courseId}`
+      );
     } else {
       return res.redirect(
-        `http://localhost:5173/course-detail/${courseId}?error=payment_failed`
+        `${process.env.FRONTEND_URL}/course-detail/${courseId}?error=payment_failed`
       );
     }
   } catch (error) {
     console.error("eSewa verification error:", error);
     return res.redirect(
-      `http://localhost:5173/course-detail/${req.query.courseId}?error=server_error`
+      `${process.env.FRONTEND_URL}/course-detail/${req.query.courseId}?error=server_error`
     );
   }
 };
