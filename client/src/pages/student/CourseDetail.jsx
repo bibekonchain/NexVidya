@@ -33,6 +33,22 @@ const CourseDetail = () => {
     }
   };
 
+  // Check if lecture is accessible (purchased or free preview)
+  const isLectureAccessible = (lecture) => {
+    return purchased || lecture.isPreviewFree;
+  };
+
+  // Find the first accessible lecture for video preview
+  const getPreviewLecture = () => {
+    if (purchased) {
+      return course.lectures[0]; // Show first lecture for purchased users
+    }
+    // For non-purchased users, find first free preview lecture
+    return course.lectures.find((lecture) => lecture.isPreviewFree) || null;
+  };
+
+  const previewLecture = getPreviewLecture();
+
   return (
     <div className="space-y-5">
       <div className="bg-[#2D2F31] text-white">
@@ -64,15 +80,32 @@ const CourseDetail = () => {
           <Card>
             <CardHeader>
               <CardTitle>Course Content</CardTitle>
-              <CardDescription>4 lectures</CardDescription>
+              <CardDescription>
+                {course.lectures.length} lectures
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {course.lectures.map((lecture, idx) => (
                 <div key={idx} className="flex items-center gap-3 text-sm">
                   <span>
-                    {true ? <PlayCircle size={14} /> : <Lock size={14} />}
+                    {isLectureAccessible(lecture) ? (
+                      <PlayCircle size={14} />
+                    ) : (
+                      <Lock size={14} />
+                    )}
                   </span>
-                  <p>{lecture.lectureTitle}</p>
+                  <p
+                    className={
+                      !isLectureAccessible(lecture) ? "opacity-60" : ""
+                    }
+                  >
+                    {lecture.lectureTitle}
+                    {!purchased && lecture.isPreviewFree && (
+                      <span className="text-green-600 text-xs ml-2">
+                        (Free Preview)
+                      </span>
+                    )}
+                  </p>
                 </div>
               ))}
             </CardContent>
@@ -81,15 +114,31 @@ const CourseDetail = () => {
         <div className="w-full lg:w-1/3">
           <Card>
             <CardContent className="p-4 flex flex-col">
-              <div className="w-full aspect-video mb-4">
-                <ReactPlayer
-                  width="100%"
-                  height={"100%"}
-                  url={course.lectures[0].videoUrl}
-                  controls={true}
-                />
-              </div>
-              <h1>Lecture title</h1>
+              {previewLecture ? (
+                <div className="w-full aspect-video mb-4">
+                  <ReactPlayer
+                    width="100%"
+                    height={"100%"}
+                    url={previewLecture.videoUrl}
+                    controls={true}
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-video mb-4 bg-gray-200 flex items-center justify-center">
+                  <div className="text-center">
+                    <Lock size={32} className="mx-auto mb-2 text-gray-500" />
+                    <p className="text-gray-600">No preview available</p>
+                    <p className="text-sm text-gray-500">
+                      Purchase course to access content
+                    </p>
+                  </div>
+                </div>
+              )}
+              <h1>
+                {previewLecture
+                  ? previewLecture.lectureTitle
+                  : "Course Preview"}
+              </h1>
               <Separator className="my-2" />
               <h1 className="text-lg md:text-xl font-semibold">Course Price</h1>
             </CardContent>

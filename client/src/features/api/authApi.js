@@ -35,16 +35,18 @@ export const authApi = createApi({
     logoutUser: builder.mutation({
       query: () => ({
         url: "logout",
-        method: "GET",
+        method: "POST", // ✅ FIX: use POST, not GET
       }),
-      async onQueryStarted(_, { queryFulfilled, dispatch }) {
+      async onQueryStarted(_, { dispatch }) {
         try {
-          dispatch(userLoggedOut());
+          dispatch(userLoggedOut()); // clear Redux state
+          dispatch(authApi.util.resetApiState()); // ✅ clear RTK Query cache
         } catch (error) {
           console.log(error);
         }
       },
     }),
+
     loadUser: builder.query({
       query: () => ({
         url: "profile",
