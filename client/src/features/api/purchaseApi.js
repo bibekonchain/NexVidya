@@ -12,10 +12,10 @@ export const purchaseApi = createApi({
   }),
   endpoints: (builder) => ({
     createCheckoutSession: builder.mutation({
-      query: (courseId) => ({
+      query: ({ courseId, method = "stripe" }) => ({
         url: "/checkout/create-checkout-session",
         method: "POST",
-        body: { courseId },
+        body: { courseId, method },
       }),
     }),
     getCourseDetailWithStatus: builder.query({
@@ -30,6 +30,13 @@ export const purchaseApi = createApi({
         method: "GET",
       }),
     }),
+    verifyEsewaPayment: builder.mutation({
+      query: (paymentData) => ({
+        url: "/checkout/verify-esewa",
+        method: "POST",
+        body: paymentData,
+      }),
+    }),
   }),
 });
 
@@ -37,4 +44,5 @@ export const {
   useCreateCheckoutSessionMutation,
   useGetCourseDetailWithStatusQuery,
   useGetPurchasedCoursesQuery,
+  useVerifyEsewaPaymentMutation,
 } = purchaseApi;

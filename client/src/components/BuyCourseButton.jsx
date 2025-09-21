@@ -1,77 +1,98 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useCreateCheckoutSessionMutation } from "@/features/api/purchaseApi";
+import { Loader2, CreditCard, Wallet } from "lucide-react";
 import { toast } from "sonner";
-import axios from "axios";
-import { Loader2 } from "lucide-react";
 
 const BuyCourseButton = ({ courseId }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [method, setMethod] = useState("stripe");
+  const [createCheckoutSession, { isLoading }] =
+    useCreateCheckoutSessionMutation();
+  const [selectedMethod, setSelectedMethod] = useState(null);
 
-  const handlePurchase = async () => {
-    setIsLoading(true);
+  const handlePurchase = async (method) => {
+    setSelectedMethod(method);
+
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL;
-      const res = await axios.post(
-        "${API_BASE_URL}/api/v1/purchase/checkout/create-checkout-session",
-        { courseId, method },
-        { withCredentials: true }
-      );
+      const response = await createCheckoutSession({
+        courseId,
+        method,
+      }).unwrap();
 
-      const { url, esewaPayload } = res.data;
+      if (response.success) {
+        if (method === "stripe") {
+          // Redirect to Stripe checkout
+          window.location.href = response.url;
+        } else if (method === "esewa") {
+          // Handle eSewa payment
+          if (response.esewaPayload) {
+            // Create a form and submit to eSewa
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = response.url;
 
-      if (method === "stripe" || method === "khalti") {
-        window.location.href = url;
-      } else if (method === "esewa" && esewaPayload) {
-        // auto-create form for eSewa
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = url;
+            // Add all payload data as hidden inputs
+            Object.keys(response.esewaPayload).forEach((key) => {
+              const input = document.createElement("input");
+              input.type = "hidden";
+              input.name = key;
+              input.value = response.esewaPayload[key];
+              form.appendChild(input);
+            });
 
-        for (const key in esewaPayload) {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = key;
-          input.value = esewaPayload[key];
-          form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+          } else {
+            toast.error("eSewa payment data not received");
+          }
         }
-
-        document.body.appendChild(form);
-        form.submit();
       } else {
-        toast.error("Unknown payment method");
+        toast.error("Failed to create checkout session");
       }
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to initiate payment");
+    } catch (error) {
+      console.error("Purchase error:", error);
+      toast.error(error.data?.message || "Something went wrong");
     } finally {
-      setIsLoading(false);
+      setSelectedMethod(null);
     }
   };
 
-  return (
-    <div className="space-y-2">
-      <select
-        className="w-full border rounded px-3 py-2 text-base font-medium text-black"
-        value={method}
-        onChange={(e) => setMethod(e.target.value)}
-      >
-        <option value="stripe">💳 Pay with Stripe</option>
-        <option value="esewa">💚 Pay with eSewa</option>
-        <option value="khalti">💜 Pay with Khalti</option>
-      </select>
+  const isMethodLoading = (method) => isLoading && selectedMethod === method;
 
+  return (
+    <div className="space-y-3 w-full">
       <Button
-        onClick={handlePurchase}
-        className="w-full font-semibold text-lg"
+        onClick={() => handlePurchase("stripe")}
         disabled={isLoading}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       >
-        {isLoading ? (
+        {isMethodLoading("stripe") ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Please wait
+            Processing...
           </>
         ) : (
-          "Purchase Course"
+          <>
+            <CreditCard className="mr-2 h-4 w-4" />
+            Buy with Stripe
+          </>
+        )}
+      </Button>
+
+      <Button
+        onClick={() => handlePurchase("esewa")}
+        disabled={isLoading}
+        className="w-full bg-green-600 hover:bg-green-700 text-white"
+      >
+        {isMethodLoading("esewa") ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            <Wallet className="mr-2 h-4 w-4" />
+            Pay with eSewa
+          </>
         )}
       </Button>
     </div>
