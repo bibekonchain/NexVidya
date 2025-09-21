@@ -12,17 +12,18 @@ import {
 
 const router = express.Router();
 
-router.route("/checkout/create-checkout-session").post(isAuthenticated, createCheckoutSession);
-router.route("/webhook").post(express.raw({type:"application/json"}), stripeWebhook);
-router.route("/course/:courseId/detail-with-status").get(isAuthenticated,getCourseDetailWithPurchaseStatus);
+router
+  .route("/checkout/create-checkout-session")
+  .post(isAuthenticated, createCheckoutSession);
+router
+  .route("/webhook")
+  .post(express.raw({ type: "application/json" }), stripeWebhook);
+router
+  .route("/course/:courseId/detail-with-status")
+  .get(isAuthenticated, getCourseDetailWithPurchaseStatus);
 
-router.route("/").get(isAuthenticated,getAllPurchasedCourse);
+router.route("/").get(isAuthenticated, getAllPurchasedCourse);
 
-router.post(
-  "/checkout/create-checkout-session",
-  isAuthenticated,
-  createCheckoutSession
-);
 router.post("/checkout/initiate-esewa", isAuthenticated, initiateEsewaPayment);
 router.post("/checkout/verify-esewa", verifyEsewaPayment);
 router.get("/checkout/verify-esewa", verifyEsewaRedirect);

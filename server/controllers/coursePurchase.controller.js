@@ -17,11 +17,14 @@ export const createCheckoutSession = async (req, res) => {
     if (!course) return res.status(404).json({ message: "Course not found!" });
 
     if (method === "stripe") {
+      // Generate unique paymentId for tracking
+      const paymentId = `stripe-${Date.now()}-${userId}`;
       const newPurchase = new CoursePurchase({
         courseId,
         userId,
         amount: course.coursePrice,
         status: "pending",
+        paymentId: paymentId,
       });
 
       const session = await stripe.checkout.sessions.create({
@@ -29,7 +32,7 @@ export const createCheckoutSession = async (req, res) => {
         line_items: [
           {
             price_data: {
-              currency: "inr",
+              currency: "npr",
               product_data: {
                 name: course.courseTitle,
                 images: [course.courseThumbnail],
@@ -46,6 +49,7 @@ export const createCheckoutSession = async (req, res) => {
         metadata: {
           courseId: String(courseId),
           userId: String(userId),
+          purchaseId: String(newPurchase._id),
         },
       });
 
@@ -63,20 +67,7 @@ export const createCheckoutSession = async (req, res) => {
 
     if (method === "esewa") {
       // Generate unique paymentId (pid)
-      const pid = `nexvidya-${Date.now()}`;
-
-      // Prepare eSewa payload
-      const payload = {
-        amt: course.coursePrice,
-        psc: 0,
-        pdc: 0,
-        txAmt: 0,
-        tAmt: course.coursePrice,
-        pid, // use generated pid here
-        scd: process.env.ESEWA_MERCHANT_ID,
-        su: `${process.env.BACKEND_URL}/api/v1/purchase/checkout/verify-esewa?courseId=${courseId}&userId=${userId}`,
-        fu: `${process.env.FRONTEND_URL}/course-detail/${courseId}`,
-      };
+      const pid = `nexvidya-${Date.now()}-${userId}`;
 
       // Save CoursePurchase with paymentId = pid
       const newPurchase = new CoursePurchase({
@@ -88,6 +79,19 @@ export const createCheckoutSession = async (req, res) => {
       });
 
       await newPurchase.save();
+
+      // Prepare eSewa payload
+      const payload = {
+        amt: course.coursePrice,
+        psc: 0,
+        pdc: 0,
+        txAmt: 0,
+        tAmt: course.coursePrice,
+        pid, // use generated pid here
+        scd: process.env.ESEWA_MERCHANT_ID,
+        su: `${process.env.BACKEND_URL}/api/v1/purchase/checkout/verify-esewa?courseId=${courseId}&userId=${userId}&pid=${pid}`,
+        fu: `${process.env.FRONTEND_URL}/course-detail/${courseId}?error=payment_failed`,
+      };
 
       return res.status(200).json({
         success: true,
@@ -156,6 +160,7 @@ export const stripeWebhook = async (req, res) => {
         { $addToSet: { enrolledStudents: purchase.userId } }, // Add user ID to enrolledStudents
         { new: true }
       );
+      console.log("Purchase completed successfully for:", purchase.paymentId);
     } catch (error) {
       console.error("Error handling event:", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -209,21 +214,18 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
   }
 };
 
-export const getAllPurchasedCourse = async (_, res) => {
+export const getAllPurchasedCourse = async (req, res) => {
   try {
     const purchasedCourse = await CoursePurchase.find({
       status: "completed",
     }).populate("courseId");
-    if (!purchasedCourse) {
-      return res.status(404).json({
-        purchasedCourse: [],
-      });
-    }
+
     return res.status(200).json({
-      purchasedCourse,
+      purchasedCourse: purchasedCourse || [],
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error getting purchased courses:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -297,13 +299,14 @@ export const verifyEsewaPayment = async (req, res) => {
 
     if (response.data.status === "COMPLETE") {
       const purchase = await CoursePurchase.findOne({ paymentId: pid });
-      if (!purchase)
+      if (!purchase) {
         return res.status(404).json({ message: "Purchase not found" });
+      }
 
       purchase.status = "completed";
       await purchase.save();
 
-      // Enroll logic
+      // Update user enrollment
       await User.findByIdAndUpdate(purchase.userId, {
         $addToSet: { enrolledCourses: purchase.courseId },
       });
@@ -319,7 +322,7 @@ export const verifyEsewaPayment = async (req, res) => {
       return res.status(400).json({ message: "Payment verification failed" });
     }
   } catch (err) {
-    console.error("Esewa payment verify error", err);
+    console.error("eSewa payment verify error:", err);
     res.status(500).json({ message: "Error verifying eSewa payment" });
   }
 };
@@ -327,7 +330,7 @@ export const verifyEsewaPayment = async (req, res) => {
 export const verifyEsewaRedirect = async (req, res) => {
   try {
     const { oid, amt, refId } = req.query; // from esewa success redirect
-    const { courseId, userId } = req.query;
+    const { courseId, userId, pid } = req.query;
 
     const verificationPayload = {
       amt,
@@ -347,14 +350,22 @@ export const verifyEsewaRedirect = async (req, res) => {
     );
 
     if (verificationRes.data.status === "COMPLETE") {
-      await CoursePurchase.findByIdAndUpdate(oid, {
-        status: "completed",
-        paymentId: refId,
-      });
+      // Find purchase by paymentId (pid), not by document ID
+      const purchase = await CoursePurchase.findOne({ paymentId: pid });
 
-      await User.findByIdAndUpdate(userId, {
-        $addToSet: { enrolledCourses: courseId },
-      });
+      if (purchase) {
+        purchase.status = "completed";
+        await purchase.save();
+
+        // Update user enrollment
+        await User.findByIdAndUpdate(userId, {
+          $addToSet: { enrolledCourses: courseId },
+        });
+
+        await Course.findByIdAndUpdate(courseId, {
+          $addToSet: { enrolledStudents: userId },
+        });
+      }
 
       return res.redirect(
         `${process.env.FRONTEND_URL}/course-progress/${courseId}`
