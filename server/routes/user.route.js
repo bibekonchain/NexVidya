@@ -16,9 +16,11 @@ const router = express.Router();
 
 router.route("/register").post(register);
 router.route("/login").post(login);
-router.route("/logout").get(logout);
+router.route("/logout").post(logout);
 router.route("/profile").get(isAuthenticated, getUserProfile);
-router.route("/profile/update").put(isAuthenticated, upload.single("profilePhoto"), updateProfile);
+router
+  .route("/profile/update")
+  .put(isAuthenticated, upload.single("profilePhoto"), updateProfile);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password/:email/:token").post(resetPassword);
 router.post(
@@ -27,7 +29,5 @@ router.post(
   upload.single("documents"),
   requestInstructor
 );
-
-
 
 export default router;

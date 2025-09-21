@@ -15,7 +15,7 @@ import certificateRoute from "./routes/certificate.route.js";
 import recommendationRoute from "./routes/recommendation.route.js";
 // import seedRoute from "./routes/seed.route.js";
 
-dotenv.config({});
+dotenv.config();
 
 // call database connection here
 connectDB();
@@ -29,26 +29,17 @@ const __dirname = path.dirname(__filename);
 // default middleware
 app.use(express.json());
 app.use(cookieParser());
+
 // Serve static certificate files
 app.use(
   "/certificates",
   express.static(path.join(__dirname, "public/certificates"))
 );
 
+// ✅ Use env vars for CORS
 app.use(
   cors({
-    origin: function (origin, callback) {
-      const allowedOrigins = [
-        "http://localhost:5173", // local dev
-        "https://nexvidya-client.onrender.com", // deployed frontend
-      ];
-
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
     credentials: true,
   })
 );
@@ -67,5 +58,9 @@ app.use("/api/v1/recommendations", recommendationRoute);
 // app.use("/api/v1/seed", seedRoute);
 
 app.listen(PORT, () => {
-  console.log(`Server listen at port ${PORT}`);
+  console.log(
+    `✅ Server running at ${
+      process.env.BACKEND_URL || `http://localhost:${PORT}`
+    }`
+  );
 });

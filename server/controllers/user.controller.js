@@ -71,9 +71,17 @@ export const login = async (req, res) => {
     });
   }
 };
+
 export const logout = async (_, res) => {
   try {
-    return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true on Render, false locally
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/", // important: match the path used when setting the cookie
+    });
+
+    return res.status(200).json({
       message: "Logged out successfully.",
       success: true,
     });
@@ -85,6 +93,7 @@ export const logout = async (_, res) => {
     });
   }
 };
+
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
