@@ -43,7 +43,7 @@ const Course = ({ course }) => {
               </Badge>
             </div>
             <div className="text-lg font-bold">
-              <span>₹{course.coursePrice}</span>
+              <span>रु{course.coursePrice}</span>
             </div>
           </CardContent>
         </Card>

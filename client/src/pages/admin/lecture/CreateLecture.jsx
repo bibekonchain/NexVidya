@@ -13,6 +13,8 @@ import Lecture from "./Lecture";
 
 const CreateLecture = () => {
   const [lectureTitle, setLectureTitle] = useState("");
+  const [videoFile, setVideoFile] = useState(null);
+
   const params = useParams();
   const courseId = params.courseId;
   const navigate = useNavigate();
@@ -27,21 +29,37 @@ const CreateLecture = () => {
     refetch,
   } = useGetCourseLectureQuery(courseId);
 
+  // ✅ Create Lecture Handler (sends FormData directly)
   const createLectureHandler = async () => {
-    await createLecture({ lectureTitle, courseId });
+    if (!lectureTitle || !videoFile) {
+      toast.error("Please provide title and video");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("lectureTitle", lectureTitle);
+    formData.append("isPreviewFree", false);
+    formData.append("videoFile", videoFile);
+    // ✅ backend expects req.file
+
+    try {
+      await createLecture({ formData, courseId });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
     if (isSuccess) {
       refetch();
       toast.success(data.message);
+      setLectureTitle("");
+      setVideoFile(null);
     }
     if (error) {
-      toast.error(error.data.message);
+      toast.error(error?.data?.message || "Error");
     }
   }, [isSuccess, error]);
-
-  console.log(lectureData);
 
   return (
     <div className="flex-1 mx-10">
@@ -54,9 +72,10 @@ const CreateLecture = () => {
           laborum!
         </p>
       </div>
+
       <div className="space-y-4">
         <div>
-          <Label>Title</Label>
+          <Label>Lecture Title</Label>
           <Input
             type="text"
             value={lectureTitle}
@@ -64,6 +83,16 @@ const CreateLecture = () => {
             placeholder="Your Title Name"
           />
         </div>
+
+        <div>
+          <Label>Upload Video</Label>
+          <Input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setVideoFile(e.target.files[0])}
+          />
+        </div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -82,15 +111,16 @@ const CreateLecture = () => {
             )}
           </Button>
         </div>
+
         <div className="mt-10">
           {lectureLoading ? (
             <p>Loading lectures...</p>
           ) : lectureError ? (
             <p>Failed to load lectures.</p>
-          ) : lectureData.lectures.length === 0 ? (
-            <p>No lectures availabe</p>
+          ) : lectureData?.lectures?.length === 0 ? (
+            <p>No lectures available</p>
           ) : (
-            lectureData.lectures.map((lecture, index) => (
+            lectureData?.lectures?.map((lecture, index) => (
               <Lecture
                 key={lecture._id}
                 lecture={lecture}

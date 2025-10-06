@@ -193,18 +193,31 @@ export const getCourseById = async (req, res) => {
 
 export const createLecture = async (req, res) => {
   try {
-    const { lectureTitle } = req.body;
+    const { lectureTitle, isPreviewFree } = req.body;
     const { courseId } = req.params;
+    const videoFile = req.file; // expect video file in lecture upload
 
     if (!lectureTitle || !courseId) {
-      return res.status(400).json({
-        message: "Lecture title is required",
-      });
+      return res
+        .status(400)
+        .json({ message: "Lecture title and courseId are required" });
     }
 
-    // create lecture
-    const lecture = await Lecture.create({ lectureTitle });
+    if (!videoFile) {
+      return res.status(400).json({ message: "Lecture video is required" });
+    }
 
+    // Upload video to Cloudinary
+    const uploadResult = await uploadMedia(videoFile.path); // adjust if using uploadVideo
+
+    const lecture = await Lecture.create({
+      lectureTitle,
+      videoUrl: uploadResult.secure_url,
+      publicId: uploadResult.public_id,
+      isPreviewFree: isPreviewFree ?? false,
+    });
+
+    // Push lecture into course
     const course = await Course.findById(courseId);
     if (course) {
       course.lectures.push(lecture._id);
@@ -222,10 +235,16 @@ export const createLecture = async (req, res) => {
     });
   }
 };
+
 export const getCourseLecture = async (req, res) => {
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId).populate("lectures");
+
+    console.log("Course Found:", course ? "Yes" : "No");
+    console.log("Lectures fetched count:", course?.lectures?.length || 0);
+    console.log("Lectures data:", course?.lectures);
+
     if (!course) {
       return res.status(404).json({
         message: "Course not found",

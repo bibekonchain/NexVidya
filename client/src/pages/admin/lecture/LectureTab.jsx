@@ -95,7 +95,12 @@ const LectureTab = () => {
   };
 
   const removeLectureHandler = async () => {
-    await removeLecture(lectureId);
+    try {
+      await removeLecture(lectureId).unwrap();
+      toast.success("Lecture removed successfully");
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to remove lecture");
+    }
   };
 
   useEffect(() => {
@@ -124,7 +129,7 @@ const LectureTab = () => {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            disbaled={removeLoading}
+            disabaled={removeLoading}
             variant="destructive"
             onClick={removeLectureHandler}
           >
