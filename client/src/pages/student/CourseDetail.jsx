@@ -27,14 +27,6 @@ const CourseDetail = () => {
   const { course, purchased } = data;
   console.log(purchased);
 
-  console.log("API data:", data);
-  console.log("course.lectures isArray?", Array.isArray(course?.lectures));
-  console.log("lectures length:", course?.lectures?.length);
-  console.log("lectures keys:", Object.keys(course?.lectures || {}));
-  console.log("first lecture:", course?.lectures?.[0]);
-  console.log("Lectures from API:", course?.lectures);
-  console.log("Lectures length:", course?.lectures?.length);
-
   const handleContinueCourse = () => {
     if (purchased) {
       navigate(`/course-progress/${courseId}`);
