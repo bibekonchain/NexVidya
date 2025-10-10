@@ -205,7 +205,7 @@ const Profile = () => {
               </div>
 
               <div className="flex gap-2">
-                <InstructorRequest />
+                {user?.role === "student" && <InstructorRequest />}
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button size="sm">Edit Profile</Button>

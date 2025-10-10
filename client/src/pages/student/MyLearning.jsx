@@ -1,16 +1,18 @@
 import React from "react";
 import Course from "./Course";
 import { useLoadUserQuery } from "@/features/api/authApi";
-
 import RecommendedCourses from "./RecommendedCourses";
-import { useSelector } from "react-redux";
 
 const MyLearning = () => {
   const { data, isLoading } = useLoadUserQuery();
 
-  const user = useSelector((state) => state.user);
+  // Get user directly from the query response instead of Redux
+  const user = data?.user;
+  const myLearning = user?.enrolledCourses || [];
 
-  const myLearning = data?.user.enrolledCourses || [];
+  console.log("User data:", user); // Debug log
+  console.log("User ID:", user?._id); // Debug log
+
   return (
     <div className="max-w-4xl mx-auto my-10 px-4 md:px-0">
       <h1 className="font-bold text-2xl">MY LEARNING</h1>
@@ -22,17 +24,19 @@ const MyLearning = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {myLearning.map((course, index) => (
-              <Course key={index} course={course} />
+              <Course key={course._id || index} course={course} />
             ))}
           </div>
         )}
       </div>
-      <div>
-        <h1 className="font-bold text-2xl">Recommended Course</h1>
 
-        {/* Recommendations */}
-        <RecommendedCourses userId={user?._id} />
-      </div>
+      {/* Only show recommendations when user is loaded */}
+      {!isLoading && user?._id && (
+        <div>
+          <h1 className="font-bold text-2xl">Recommended Course</h1>
+          <RecommendedCourses userId={user._id} />
+        </div>
+      )}
     </div>
   );
 };
