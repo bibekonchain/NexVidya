@@ -17,6 +17,16 @@ import recommendationRoute from "./routes/recommendation.route.js";
 
 dotenv.config();
 
+// ✅ Disable console logs ONLY in production
+if (process.env.NODE_ENV === "production") {
+  console.log = () => {};
+  console.warn = () => {};
+  console.info = () => {};
+  // keep console.error if you still want to see errors in prod
+  // or disable it too if you want complete silence:
+  // console.error = () => {};
+}
+
 // call database connection here
 connectDB();
 const app = express();
