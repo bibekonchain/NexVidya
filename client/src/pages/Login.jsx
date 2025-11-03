@@ -64,24 +64,44 @@ const Login = () => {
     }
   };
 
+  // --- Validation Helpers ---
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidName = (name) => /^[A-Za-z\s]+$/.test(name);
+  const isStrongPassword = (password) =>
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(password);
 
+  // --- Handle Signup/Login ---
   const handleRegistration = async (type) => {
     if (type === "signup") {
       const { name, email, password, confirmPassword } = signupInput;
-      if (!name || !email || !password || !confirmPassword)
+
+      if (!name.trim() || !email.trim() || !password || !confirmPassword)
         return toast.error("All fields are required.");
-      if (!isValidEmail(email)) return toast.error("Invalid email format.");
-      if (password.length < 6)
-        return toast.error("Password must be at least 6 characters.");
+
+      if (!isValidName(name))
+        return toast.error("Name should only contain letters and spaces.");
+
+      if (!isValidEmail(email))
+        return toast.error("Please enter a valid email address.");
+
+      if (!isStrongPassword(password))
+        return toast.error(
+          "Password must include at least 6 characters, 1 uppercase letter, 1 number, and 1 special character."
+        );
+
       if (password !== confirmPassword)
         return toast.error("Passwords do not match.");
+
       await registerUser({ name, email, password });
     } else {
       const { email, password } = loginInput;
-      if (!email || !password)
+
+      if (!email.trim() || !password.trim())
         return toast.error("Email and password are required.");
-      if (!isValidEmail(email)) return toast.error("Invalid email format.");
+
+      if (!isValidEmail(email))
+        return toast.error("Please enter a valid email address.");
+
       await loginUser({ email, password });
     }
   };
@@ -159,7 +179,7 @@ const Login = () => {
                   name="password"
                   value={signupInput.password}
                   onChange={(e) => changeInputHandler(e, "signup")}
-                  placeholder="Minimum 6 characters"
+                  placeholder="Minimum 6 characters Eg. Bibek@123"
                   required
                 />
                 <span
